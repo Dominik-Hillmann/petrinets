@@ -1,0 +1,246 @@
+package model;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+public class PetriNet {
+	private Set<Place> places;
+	private Set<Transition> transitions;
+	private Map<String, String[]> arcsMap = null;
+	
+	public PetriNet(Set<Place> places, Set<Transition> transitions) {
+		this.places = places;
+		this.transitions = transitions;
+	}
+	
+	/**
+	 * Findet eine Stelle anhand derer ID.
+	 * @param id Die ID der gesuchten Stelle.
+	 * @return Die Stelle mit dieser ID.
+	 * @throws NodeNotFoundException Wenn keine Stelle mit dieser ID im Petrinetz existiert.
+	 */
+	private Place getPlaceById(String id) throws NodeNotFoundException {
+		for (Place place : places) {
+			if (place.hasId(id)) {
+				return place;
+			}
+		}
+		
+		throw new NodeNotFoundException("Stelle mit der ID " + id + " konnte nicht gefunden werden.");
+	}
+	
+	/**
+	 * Findet eine Transition anhand derer ID.
+	 * @param id Die ID der gesuchten Transition.
+	 * @return Die Transition, die diese ID besitzt.
+	 * @throws NodeNotFoundException Wenn keine Transition mit dieser ID im Petrinetz existiert.
+	 */
+	private Transition getTransitionById(String id) throws NodeNotFoundException {
+		for (Transition transition : transitions) {
+			if (transition.hasId(id)) {
+				return transition;
+			}
+		}
+		
+		throw new NodeNotFoundException("Transition mit der ID " + id + " konnte nicht gefunden werden.");
+	}
+	
+	/**
+	 * Findet einen Knoten im Petrinetz anhand dessen ID.
+	 * @param id Die ID des Knoten.
+	 * @return Den gesuchten Knoten.
+	 * @throws NodeNotFoundException Wenn kein Knoten mit dieser ID im Petrinetz existiert.
+	 */
+	private Node getNodeById(String id) throws NodeNotFoundException {
+		try {
+			return (Node) getPlaceById(id);
+		} catch (NodeNotFoundException e) {
+			return (Node) getTransitionById(id);
+		}
+	}
+	
+	/**
+	 * Ordnet jedem Knoten einen Namen zu.
+	 * @param names Die IDs, denen Namen zugeordnet sind.
+	 * @throws NodeNotFoundException Wenn eine ID in names nicht im Petrinetz existiert.
+	 */
+	public void initNames(Map<String, String> names) throws NodeNotFoundException {
+		Set<String> ids = names.keySet();
+		for (String id : ids) {
+			Node nodeToBeNamed = getNodeById(id);
+			String name = names.get(id);
+			nodeToBeNamed.setName(name);
+		}
+	}
+	
+	/**
+	 * Ordnet jedem Knoten eine grafische Position zu.
+	 * @param positions Die zuzuordnenden Positionen.
+	 * @throws NodeNotFoundException Wenn eine eine ID in positions nicht im 
+	 * Petrinetz existiert.
+	 */
+	public void initPositions(Map<String, Position> positions) throws NodeNotFoundException {
+		Set<String> ids = positions.keySet();
+		for (String id : ids) {
+			Node nodeToBePositioned = getNodeById(id);
+			Position position = positions.get(id);
+			nodeToBePositioned.setPosition(position);
+		}
+	}
+	
+	
+	/**
+	 * Ordnet jeder Stelle ihre initialen Marken zu,
+	 * @param tokens Eine Map der Stellen-IDs auf die Zahl der Marken. 
+	 * @throws NodeNotFoundException Wenn eine ID in tokens nicht im 
+	 * Petrinetz existiert.
+	 */
+	public void initTokens(Map<String, Integer> tokens) throws NodeNotFoundException {
+		Set<String> ids = tokens.keySet();
+		for (String id : ids) {
+			Place place = getPlaceById(id);
+			int numNewTokens = tokens.get(id);
+			place.initNumTokens(numNewTokens);
+		}
+	}
+	
+	/**
+	 * Registriert alle Verbindungen im Petrinetz bei den Knoten.
+	 * @param arcs Die Verbindungen, jede ist über ihre ID identifiziert und 
+	 * enthält die IDs von Start- und Endknoten.
+	 * @throws IllegalArcException Wenn eine Verbindung zwischen Knoten 
+	 * gleicher Farbe existiert.
+	 */
+	public void initArcs(Map<String, String[]> arcs) throws IllegalArcException {
+		// Festhaltung, um später rekonstruieren zu können.
+		arcsMap = arcs;		
+		Set<String> arcIds = arcs.keySet();
+		
+		for (String arcId : arcIds) {
+			String fromId = arcs.get(arcId)[0];
+			String toId = arcs.get(arcId)[1];
+			
+			// Als erstes testen, ob Kante vom Stelle zu Transition läuft.
+			try {
+				Place from = getPlaceById(fromId);
+				Transition to = getTransitionById(toId);
+				
+				PlaceToTransitionArc arc = new PlaceToTransitionArc(arcId, from, to);
+				from.register(arc);
+				to.register(arc);
+				
+			} catch (NodeNotFoundException e1) {
+				// Dann kann es nur sein, dass die Kante/arc von Transition zu Stelle läuft.
+				try {
+					Transition from = getTransitionById(fromId);
+					Place to = getPlaceById(toId);				
+					
+					TransitionToPlaceArc arc = new TransitionToPlaceArc(arcId, from, to);
+					from.register(arc);
+					to.register(arc);
+					
+				// Und wenn das nicht geht, dann darf eine solche Kante nicht im Petrinetz existieren,
+				// da es bipartit ist.
+				} catch (NodeNotFoundException e2) {
+					String m = "Kante " + arcId + " von " + fromId + " zu " + toId + ".";
+					throw new IllegalArcException("Kante gefunden, die nicht von Transition " +
+							"zu Stelle oder von Stelle zu Transition verläuft. Petrinetz muss " + 
+							"bipartit sein. " + m);
+				}
+			}					
+		}
+	}
+	
+	/**
+	 * Findet eine Transition per ID und feuert diese.
+	 * @param transitionId Die ID, mit der die Transition gesucht wird.
+	 * @throws CannotFireException Wenn keine Transition mit dieser ID existiert, oder
+	 * die Transition nicht feuern kann, weil es im Preset an Marken fehlt.
+	 */
+	public void fire(String transitionId) throws CannotFireException {
+		Transition firingTransition;
+		try {
+			firingTransition = getTransitionById(transitionId);
+		} catch (NodeNotFoundException e) {
+			throw new CannotFireException(
+				transitionId + " existiert nicht im Petrinetz, kann deshalb nicht feuern."
+			);
+		}
+		
+		firingTransition.fire();
+	}
+	
+	/**
+	 * Übersichtliche Darstellung als String.
+	 * Habe ich oft benutzt, um mir einen Überblick den Zustand
+	 * des Petrinetz zu machen.
+	 */
+	@Override
+	public String toString() {
+		String representation = "";
+		for (Place place : places) {
+			representation += place.toString() + "\n";
+			for (Transition target : place.getTargets())
+				representation += "  zu  " + target.toString() + "\n";
+			for (Transition origin : place.getOrigins())
+				representation += "  von " + origin.toString() + "\n";
+		}
+		
+		for (Transition transition : transitions) {
+			representation += transition.toString() + "\n";
+			for (Place prePlace : transition.getPreset())
+				representation += "  von " + prePlace.toString() + "\n";
+			for (Place postPlace : transition.getPostset())
+				representation += "  zu  " + postPlace.toString() + "\n";
+		}
+		return representation;
+	}
+	
+	public Set<Place> getPlaces() {
+		return places;
+	}
+	
+	/**
+	 * Erstellt eine Kopie des Petrinetzes mit der durch marking gegebenen
+	 * Verteilung an Marken.
+	 * @param marking Die Markierung, Verteilung der Marken auf Stellen.
+	 * @return Die Kopie des Petrinetzes, die Marken verteilt wie in marking.
+	 * @throws NodeNotFoundException Wenn im Marking eine ID einer Stelle existiert,
+	 * die im Petrinetz nicht vorkommt.
+	 */
+	public PetriNet fromMarking(Marking marking) throws NodeNotFoundException {
+		Set<Place> copiedPlaces = new HashSet<Place>();
+		places.forEach(place -> copiedPlaces.add((Place) place.copy()));
+		Set<Transition> copiedTransitions = new HashSet<Transition>();
+		transitions.forEach(trans -> copiedTransitions.add((Transition) trans.copy()));
+		
+		PetriNet copyNet = new PetriNet(copiedPlaces, copiedTransitions);
+		try {
+			copyNet.initArcs(arcsMap);
+		} catch (IllegalArcException e) {
+			System.out.println("Initiale Beschreibung der Kanten ist nicht legal. " +
+					e.getMessage());
+			System.exit(0);
+		}		
+		copyNet.initTokens(marking.getMarking());
+	
+		return copyNet;
+	}
+	
+	/**
+	 * Gibt die aktuelle Markierung des Petrinetzes aus, ohne das
+	 * Petrinetz zu modifizieren.
+	 * @return Die Markierung
+	 */
+	public Marking getMarking() {
+		// Frage: wie kann man in dem Marking-Objekt garantieren, dass 
+		// immer die Daten zu allen Markierung beinhaltet?
+		Map<String, Integer> marking = new HashMap<String, Integer>();
+		places.forEach(place -> marking.put(place.getId(), place.getTokens()));
+		return new Marking(marking);
+	}
+	
+	
+}

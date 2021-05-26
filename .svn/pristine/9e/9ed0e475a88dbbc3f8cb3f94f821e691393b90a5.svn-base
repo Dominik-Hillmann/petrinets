@@ -1,0 +1,78 @@
+package controller;
+
+import model.NodeNotFoundException;
+import model.PetriNet;
+import model.ReachabilityGraph;
+//import view.VisualPetriGraph;
+//import mypackage.view.MyFrame;
+import view.GraphsFrame;
+import view.VisualPetriGraph;
+
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
+
+//import controller.ClickListener;
+
+/**
+ * Die Klasse Controller stellt die Steuerung der Anwendung dar. Hier läuft
+ * alles zusammen.
+ * 
+ * <p>
+ * Der Controller hat sowohl Zugriff auf die View (hier über {@link MyFrame})
+ * als auch auf das Datenmodell ({@link MyGraph}).
+ * </p>
+ * 
+ * @author ProPra-Team FernUni Hagen
+ */
+
+public class Controller {
+
+	/** Hauptfenster der Anwendung */
+	private GraphsFrame frame;
+
+	/** Graph, der angezeigt wird */
+	private VisualPetriGraph petriGraph;
+	
+	private PetriNet petriNet;
+	private ReachabilityGraph reach;
+
+	/**
+	 * Konstruktor der Klasse Controller
+	 * 
+	 * @param frame
+	 *            Hauptfenster der Anwendung
+	 */
+	public Controller(GraphsFrame frame, PetriNet petriNet, ReachabilityGraph reach) {
+		this.frame = frame;	
+		this.petriNet = petriNet;
+		this.reach = reach;
+		petriGraph = new VisualPetriGraph(petriNet);
+	}
+
+	public void clickNodeInGraph(String id) throws NodeNotFoundException {
+		// Ausgabe, welcher Knoten geklickt wurde
+		System.out.println("Clicked: " + petriNet.getNodeById(id).toString());
+//		petriGraph.getNode(id).addAttribute("ui.class", "highlight");
+		System.out.println(petriGraph.getNode(id).getAttribute("ui.class").toString());
+//		Node node = petriGraph.getNode(id);
+//
+//		if (node.hasAttribute("ui.class")) {
+//			node.removeAttribute("ui.class");
+//		} else {
+//			node.addAttribute("ui.class", "highlight");
+//		}
+//		frame.outputText(graph.getOutputText(id));
+//
+//		// Markierung des Knoten wegnehmen oder Knoten hervorheben.
+//		graph.toggleNodeHighlight(id);
+	}
+
+	/**
+	 * Getter-Methode, die den Graphen liefert
+	 * 
+	 * @return den Graphen der Anwendung
+	 */
+//	public Graph getGraph() {
+//		return (Graph) graph;
+//	}
+}

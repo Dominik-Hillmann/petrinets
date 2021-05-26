@@ -1,0 +1,9 @@
+package model;
+
+import java.util.Set;
+
+abstract class Net {
+	
+	abstract Set<Arc> getArcs();
+	
+}

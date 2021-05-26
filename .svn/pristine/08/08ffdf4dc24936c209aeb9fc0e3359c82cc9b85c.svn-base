@@ -1,0 +1,21 @@
+package model;
+
+public class GraphIsUnlimitedException extends Exception {
+	private final Marking START;
+	private final Marking END;	
+	
+	public GraphIsUnlimitedException(Marking start, Marking end) {
+		super("Es wurde ein Paar von Markierungen gefunden, die das Unbeschränktheitskriterium " +
+				"erfüllen: " + start.toString() + " und " + end.toString() + ".");
+		this.START= start;
+		this.END = end;
+	}
+	
+	public Marking getStart() {
+		return START;
+	}
+	
+	public Marking getEnd() {
+		return END;
+	}
+}

@@ -1,0 +1,68 @@
+package model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class GraphIsUnlimitedException extends Exception {
+	
+	/** Von Eclipse generierte ID. */
+	private static final long serialVersionUID = -3596817224615912974L;
+	private Marking start;
+	private Marking end;	
+//	private List<Marking> path;
+//	private List<MarkingToMarkingArc> path;
+	private List<Marking> nodePath;
+	private List<MarkingToMarkingArc> arcPath;
+	
+//	public GraphIsUnlimitedException(Marking start, Marking end, List<Marking> path) {
+	public GraphIsUnlimitedException(Marking start, Marking end, List<Marking> nodePath, List<MarkingToMarkingArc> arcPath) {
+		super("Es wurde ein Paar von Markierungen gefunden, die das Unbeschränktheitskriterium " +
+				"erfüllen: " + start.toString() + " und " + end.toString() + ".");
+		this.start = start;
+		this.end = end;
+//		this.path = path;
+		this.nodePath = nodePath;
+		this.arcPath = arcPath;
+	}
+	
+//	public List<Marking> getFullPath() {		
+//		return path;
+//	}
+	
+	public List<Marking> getFullNodePath() {
+		return nodePath;
+	}
+	
+	public List<MarkingToMarkingArc> getFullArcPath() {
+		return arcPath;
+	}
+	
+	public List<String> getFormattedTransitionPath() {
+		List<String> reversedPath = new ArrayList<String>();
+//		for (int i = arcPath.size() - 1; i >= 0; i--) {
+//			reversedPath.add(arcPath.get(i).getSourceTransitionId());
+//		}
+		for (int i = nodePath.size() - 1; i >= 0; i--) {
+			reversedPath.add(nodePath.get(i).getSourceTransitionId());
+		}
+		
+		if (reversedPath.get(0).equals("null")) {
+			reversedPath.remove(0);
+		}
+		
+		boolean firstIsRoot = reversedPath.get(0).equals(ReachabilityGraph.ROOT_NAME);
+		if (firstIsRoot) {
+			reversedPath.remove(ReachabilityGraph.ROOT_NAME);
+		}
+		
+		return reversedPath;
+	}
+	
+	public Marking getStart() {
+		return start;
+	}
+	
+	public Marking getEnd() {
+		return end;
+	}
+}

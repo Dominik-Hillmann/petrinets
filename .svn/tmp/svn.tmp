@@ -1,0 +1,135 @@
+package main;
+import java.io.File;
+
+import model.CannotFireException;
+import model.Marking;
+import model.PetriNet;
+import model.PnmlParser;
+import model.ReachabilityGraph;
+import view.TestFrame;
+
+public class Petrinets_6764860_Hillmann_Dominik_Fred {
+	/** Name aller Test-PNMLs. */
+	static String[] cases = {/*
+		"110-B1-N01-A00-EineStelleZweiMarken.pnml",
+		"111-B1-N01-A00-EineStelleEineTransition.pnml",
+		"112-B1-N02-A01-EineStelleEineMarkeEineTransition.pnml",
+		"113-B1-N03-A02-EineStelleZweiMarkenEineTransition.pnml",
+		"114-B1-N01-A01-StelleInVorUndNachbereich.pnml",
+		"115-B1-N02-A02-AlternativeTransitionen.pnml",
+		"116-B1-N03-A02-AlternativeStellen.pnml",
+		"117-B1-N02-A02-AlternierendeStellen.pnml",
+		"118-B1-N03-A04-AlternierendeStellenZweiMarken.pnml",
+		"119-B1-N02-A01-ZweiStellenTransitionStelle.pnml",
+		"130-B1-N05-A05-Gabelung.pnml",
+		"131-B1-N05-A04-BegrenzteSchleife.pnml",
+		"132-B1-N10-A12-StelleTransStelleTransStelle.pnml",
+		*/// "150-B1-N04-A04-Example01.pnml",
+		"151-B1-N05-A07-Example02.pnml"/*,
+		"152-B1-N06-A06-Example03v1.pnml",
+		"170-B1-N03-A04-MutualExclusion.pnml",
+		"171-B1-N05-A05-Kreis3.pnml",
+		"172-B1-N15-A16-Kreis-gross.pnml",
+		"173-B1-N04-A03-m-auf-anderem-Pfad1.pnml",
+		"174-B1-N09-A09-m-auf-anderem-Pfad2.pnml",
+		"175-B1-N12-A20-Mailbox-2-Bounded.pnml",
+		"176-B1-N16-A28-Mailbox-3-Bounded.pnml",
+		"177-B1-N20-A36-Mailbox-4-Bounded.pnml",
+		"178-B1-N06-A10-Vending-Machine.pnml",
+		"179-B1-N06-A06-Kreis-mit-zwei-Ausgaengen.pnml",
+		"180-B1-N15-A25-Kreis-mit-zwei-Eingaengen.pnml",
+		"181-B1-N08-A07-Kreis-ohne-Kreis.pnml",
+		"210-B0-P01-Qxx-EineTransitionEineStelle.pnml",
+		"211-B0-P01-Qxx-TransStelleTrans.pnml",
+		"230-B0-P02-Qxx-Counter.pnml",
+		"231-B0-P02-Qxx-CounterMitAbfluss.pnml",
+		"250-B0-P02-Q03-Example3v2.pnml",
+		"251-B0-P01-Qxx-Netz1.pnml",
+		"252-B0-P02-Qxx-Netz2.pnml",
+		"253-B0-P02-Q03-Netz3.pnml",
+		"254-B0-P01-Qxx-Netz4.pnml",
+		"255-B0-P01-Qxx-Netz5.pnml",
+		"256-B0-P03-Qxx-Netz6.pnml",
+		"257-B0-P01-Qxx-Netz7.pnml",
+		"258-B0-P02-Qxx-Netz8.pnml",
+		"270-B0-P02-Qxx-Keksautomat.pnml",
+		"271-B0-P05-Qxx-Kreis3-vor-Omega.pnml",
+		"272-B0-P04-Qxx-Kreis3-nach-Omega.pnml",
+		"273-B0-P05-Q06-Kreis-nach-Omega-gross.pnml",
+		"274-B0-P05-Qxx-Kreis4-vor-und-nach-Omega.pnml",
+		"275-B0-P02-Qxx-Mailbox-unbounded.pnml",
+		"276-B0-P04-Q10-mehrere-Pfade.pnml"*/
+	};
+
+	public static void main(String[] args) {
+		printParsedPnmls();
+		// runFrame();
+		System.out.println("Terminiert.");
+	}
+	
+	
+	private static void runFrame() {
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				new TestFrame("Dominik Fred Hillmann, 6764860");
+			}
+		});
+	}
+	
+	
+	private static void printParsedPnmls() {
+		String baseUrl = "C:\\Users\\Dominik USER\\eclipse-workspace\\ProPra-WS20-Basis\\Beispiele\\";
+		// String baseUrl = "/home/dom/repositories/eclipse-workspace/ProPra-WS20-Basis/Beispiele/";
+		for (String name : cases) {
+			System.out.println(name);
+			
+			File pnml = new File(baseUrl + name);
+			if (pnml.exists()) {
+				PnmlParser parser = new PnmlParser(pnml);
+				PetriNet petriNet = parser.getPetriNet();				
+				ReachabilityGraph reach = new ReachabilityGraph(petriNet);
+				Marking oldMarking = petriNet.getMarking();
+				
+				System.out.println("### 0 ###");
+				System.out.println(reach.toString());
+				try {
+					System.out.println("### 1: t4 ###");
+					petriNet.fire("t4");
+					reach.registerMarking(oldMarking);
+					System.out.println(reach.toString());
+					oldMarking = petriNet.getMarking();
+					
+					System.out.println("### 2: t2 ###");
+					petriNet.fire("t2");
+					reach.registerMarking(oldMarking);
+					System.out.println(reach.toString());
+					oldMarking = petriNet.getMarking();
+
+					System.out.println("### 3: t4 ###");
+					petriNet.fire("t4");
+					reach.registerMarking(oldMarking);
+					System.out.println(reach.toString());
+					oldMarking = petriNet.getMarking();
+				} catch (CannotFireException e) {
+					System.out.println(e.getMessage());
+				}
+				
+//				Marking originMarking = petriNet.getMarking();
+//				reach.registerMarking(originMarking); 
+//				System.out.println(reach.toString());
+				
+//				System.out.println(petriNet.toString());
+				
+
+//				System.out.println("NACH FIRE()");				
+//				System.out.println(petriNet.toString());
+			} else {
+				System.out.println(name + " existiert nicht.");
+			}
+				
+			System.out.println("\n");
+		}
+	}
+
+}

@@ -1,0 +1,221 @@
+package view;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.MultiGraph;
+
+import model.Arc;
+import model.Marking;
+import model.MarkingToMarkingArc;
+import model.NodeNotFoundException;
+import model.Pair;
+import model.ReachabilityGraph;
+
+public class VisualReachabilityGraph extends MultiGraph {
+	private ReachabilityGraph sourceNet;
+	private final String CSS_FILE = "url(" + 
+    		System.getProperty("user.dir") +
+    		"/ressources/graph.css)";
+	
+	
+	public VisualReachabilityGraph(ReachabilityGraph reach) {
+		super("Erreichbarkeitsgraph");
+		sourceNet = reach;		
+		addAttribute("ui.stylesheet", CSS_FILE);
+		createGraphNodes();
+	}
+	
+	private void createGraphNodes() {
+		for (Marking marking : sourceNet.getMarkings()) {
+			Node markingGraphicalNode = addNode(marking.getId());
+			markingGraphicalNode.addAttribute("ui.class", "marking");
+			markingGraphicalNode.addAttribute("ui.label", marking.getName());
+			
+			if (marking.equals(sourceNet.getRoot())) {
+				markingGraphicalNode.addAttribute("ui.class", "root");
+			}
+		}
+		
+		Set<String> alreadyAddedIds = new HashSet<String>();
+		for (Arc arc : sourceNet.getArcs()) {
+			String fromId = arc.getFrom().getId();
+			String toId = arc.getTo().getId();
+			Pair<String, String> idPair = new Pair<String, String>(fromId, toId);
+			
+			Node from = getNode(fromId);
+			Node to = getNode(toId);
+			boolean idAlreadyUsed = alreadyAddedIds.contains(idPair.toString());
+			if (idAlreadyUsed) {
+				continue;
+			} else {
+				addEdge(arc.getId(), from, to, true);
+				alreadyAddedIds.add(idPair.toString());
+			}	
+		}
+	}
+	
+	public void update(ReachabilityGraph reachNet) {
+		// --- Ermittlung der Unterschiede der Graphen ------------------------
+		Set<String> idsToBeAdded = getIdsToBeAdded(reachNet);
+		Set<String> idsToBeRemoved = getIdsToBeRemoved(reachNet);
+		System.out.println(reachNet.toString());
+		System.out.println();
+		System.out.println("TO BE ADDED:   " + idsToBeAdded.toString());
+		System.out.println("TO BE REMOVED: " + idsToBeRemoved.toString());
+		
+		// Hier werden zunächst nur die Stellen dem visuelle Graphen hinzugefügt.
+		for (String addedId : idsToBeAdded) {
+			// Ermittle Stelle im Modell.
+			Marking marking;
+			try {
+				marking = reachNet.getMarking(addedId);
+			} catch (NodeNotFoundException e) {
+				System.out.println("Unable to find marking");
+				continue;
+			}			
+			// Füge ermittelte Stelle dem visuellen Modell hinzu (ohne Kanten).
+			Node markingVisual = addNode(addedId);
+			markingVisual.addAttribute("ui.label", marking.guiName());
+			markingVisual.addAttribute("ui.class", "marking");		
+		}	
+		
+		
+		for (String addedId : idsToBeAdded) {
+			Marking marking;
+			try {
+				marking = reachNet.getMarking(addedId);
+			} catch (NodeNotFoundException e) {
+				System.out.println("Unable to find marking");
+				continue;
+			}
+			
+			// Finde Kanten im Modell.
+			Set<String> modelArcIds = new HashSet<String>();
+			marking.getArcs().forEach(arc -> modelArcIds.add(arc.getId()));
+			
+			// Finde heraus, welche Kanten bereits im Modell sind.
+			Set<String> visualArcIds = new HashSet<String>();
+			getEachEdge().forEach(edge -> visualArcIds.add(edge.getId()));
+			
+			Set<String> arcsToBeAdded = new HashSet<String>();
+			modelArcIds.forEach(id -> {
+				if (!visualArcIds.contains(id)) {
+					arcsToBeAdded.add(id);
+				}
+			});
+			
+			// Füge all diese dem visuellen Graphen hinzu.
+			for (String arcIdToBeAdded : arcsToBeAdded) {
+				Arc modelArc;
+				try {
+					modelArc = marking.getArc(arcIdToBeAdded);
+				} catch (NodeNotFoundException e) {
+					continue;
+				}
+				String startNodeId = modelArc.getFrom().getId();
+				Node start = getNode(startNodeId);
+				String endNodeId = modelArc.getTo().getId();
+				Node end = getNode(endNodeId);
+
+				if (!edgeAlreadyAdded(start, end)) {				
+					addEdge(modelArc.getId(), start, end, true);
+				}
+			}
+		}
+		
+		// TODO Es müssen genauso nach dem Hinzufügen der Markierungen
+		// auch poteniell fehlende Kanten hinzugefügt werden, um z.B. 
+		// einen Kreis zu schließen.
+		Set<MarkingToMarkingArc> modelEdgeIds = new HashSet<MarkingToMarkingArc>();
+		reachNet.getArcs().forEach(edge -> modelEdgeIds.add((MarkingToMarkingArc) edge));
+		
+		Set<String> visualEdgeIds = new HashSet<String>();
+		getEdgeSet().forEach(edge -> visualEdgeIds.add(edge.getId()));
+		
+		Set<MarkingToMarkingArc> edgeIdsToBeAdded = new HashSet<MarkingToMarkingArc>();
+		modelEdgeIds.forEach(edge -> {
+			if (!visualEdgeIds.contains(edge.getId())) {
+				edgeIdsToBeAdded.add(edge);
+			}
+		});
+		
+		for (MarkingToMarkingArc edgeToBeAdded : edgeIdsToBeAdded) {
+			Node start = getNode(edgeToBeAdded.getFrom().getId());
+			Node end = getNode(edgeToBeAdded.getTo().getId());
+			
+			if (!edgeAlreadyAdded(start, end)) {
+				addEdge(edgeToBeAdded.getId(), start, end, true);
+			}
+		}
+		
+		
+		
+		for (String removalId : idsToBeRemoved) {
+			Node removalNode = getNode(removalId);
+			removeNode(removalNode);
+			
+			System.out.println(removalNode);
+		}
+		
+		System.out.println();
+		System.out.println(". " + modelEdgeIds.toString());
+		System.out.println(". " + visualEdgeIds.toString());
+		System.out.println(". " + edgeIdsToBeAdded.toString());
+	}
+	
+	private Set<String> getIdsToBeAdded(ReachabilityGraph reachNet) {
+		Set<String> modelIds = new HashSet<String>(); 
+		reachNet.getMarkings().forEach(marking -> modelIds.add(marking.getId()));
+//		System.out.print("| Im Modell enthaltene IDs: ");
+//		System.out.println(modelIds);
+		
+		Set<String> visualIds = new HashSet<String>();
+		getEachNode().forEach(node -> visualIds.add(node.getId()));
+//		System.out.print("| Visuelle IDs: ");
+//		System.out.println(visualIds.toString() + "\n|");
+				
+		Set<String> idsToBeAdded = new HashSet<String>();
+		modelIds.forEach(id -> {
+			if (!visualIds.contains(id))
+				idsToBeAdded.add(id);
+		});
+		
+		return idsToBeAdded;
+	}
+	
+	
+	private Set<String> getIdsToBeRemoved(ReachabilityGraph reachNet) {
+		Set<String> modelIds = new HashSet<String>(); 
+		reachNet.getMarkings().forEach(marking -> modelIds.add(marking.getId()));
+		
+		Set<String> visualIds = new HashSet<String>();
+		getEachNode().forEach(node -> visualIds.add(node.getId()));
+		
+		Set<String> idsToBeRemoved = new HashSet<String>();
+		visualIds.forEach(id -> {
+			if (!modelIds.contains(id)) {
+				idsToBeRemoved.add(id);
+			}
+		});
+		
+		return idsToBeRemoved;
+	}
+	
+//	private Set<String>()
+	private boolean edgeAlreadyAdded(Node start, Node end) {
+		String startId = start.getId();
+		String endId = end.getId();
+		
+		for (Edge edge : getEdgeSet()) {
+			boolean startSame = edge.getNode0().getId().equals(startId);
+			boolean endSame = edge.getNode1().getId().equals(endId);
+			if (startSame && endSame) {
+				return true;
+			}
+		}
+		return false;
+	}
+}

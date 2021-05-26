@@ -1,0 +1,39 @@
+package view;
+
+import org.graphstream.ui.view.ViewerListener;
+
+import controller.Controller;
+import model.NodeNotFoundException;
+
+public class ClickListenerTest2 implements ViewerListener {
+	private Controller controller;
+	
+	public ClickListenerTest2(Controller controller) {
+		this.controller = controller;
+	}
+
+	@Override
+	public void viewClosed(String viewName) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void buttonPushed(String id) {
+		System.out.println("Hier ist der Testlistener...");
+		try {
+			controller.clickNodeInGraph(id);
+		} catch (NodeNotFoundException e) {
+			System.out.println("NodeNotFoundException in buttonPushed");
+		}
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void buttonReleased(String id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

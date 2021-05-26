@@ -1,0 +1,11 @@
+package model;
+
+public class NodeNotFoundException extends Exception {
+
+	/** Von Java generierte ID. */
+	private static final long serialVersionUID = -2025395310172579530L;
+
+	public NodeNotFoundException(String errorMessage) {
+		super(errorMessage);
+	}
+}

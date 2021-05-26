@@ -1,0 +1,42 @@
+package model;
+
+/** Repräsentiert ein beliebiges Element, wie es in der PNML beschrieben ist. */
+public class PetriNetElement {
+	/** Die in der PNML enthaltene ID jedes Elements (Arcs, Places, Transitions). */
+	protected String id;
+	
+	protected PetriNetElement(String id) {
+		this.id = id;
+	}
+	
+	/**
+	 * Gibt die ID des des Elements aus.
+	 * @return Die ID.
+	 */
+	public String getId() {
+		return id;
+	}
+	
+	/**
+	 * Gibt aus, ob der Knoten diese ID besitzt.
+	 * @param compareId
+	 * @return
+	 */
+	public boolean hasId(String compareId) {
+		return compareId.equals(id);
+	}
+	
+	
+	/** Überprüft Gleichheit von Petrinetzelementen über die ID. */
+	@Override
+	public boolean equals(Object obj) {
+		PetriNetElement other;
+		try {
+			other = (PetriNetElement) obj;
+		} catch (Exception e) {
+			return false;
+		}
+		
+		return id.equals(other.getId());
+	}
+}

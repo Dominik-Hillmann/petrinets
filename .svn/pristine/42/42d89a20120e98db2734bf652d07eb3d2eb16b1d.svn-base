@@ -1,0 +1,9 @@
+package main;
+
+public class Petrinets_6764860_Hillmann_Dominik_Fred {
+
+	public static void main(String[] args) {
+		System.out.println("Das ist ein Test.");
+	}
+
+}

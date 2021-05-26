@@ -1,0 +1,14 @@
+package model;
+
+public class CannotFireException extends Exception {
+	public CannotFireException(Transition transition, Place origin) {
+		super(
+			transition.toString() + " kann nicht feuern, " +
+			"weil " + origin.toString() + " keine Marke besitzt."
+		);
+	}
+	
+	public CannotFireException(String reason) {
+		super(reason);
+	}
+}

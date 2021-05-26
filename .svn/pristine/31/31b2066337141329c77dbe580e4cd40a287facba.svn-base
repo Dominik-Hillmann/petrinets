@@ -1,0 +1,204 @@
+package model;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Map;
+
+public class ReachabilityGraph {
+	/** Die Knoten des Erreichbarkeitsgraphen. */
+	private Set<Marking> markings = new HashSet<Marking>();
+	/** 
+	 * Wurzel des Graphen und Markierung des Petrinetzes bei 
+	 * Erstellung des Erreichbarkeitsgraphen. 
+	 */
+	private Marking root;
+	
+	/**
+	 * Erstellt einen Erreichbarkeitsgraphen, entnimmt dem Petrinetz
+	 * seine Startkonfiguration und benutzt sie als Wurzel.
+	 * @param petriNet
+	 */
+	public ReachabilityGraph(PetriNet petriNet) {
+		// Initiale Markierung
+		root = petriNet.getMarking();
+		markings.add(root);
+	}
+	
+	/**
+	 * Liefert die Wurzel des Knoten, der die Startkonfiguration
+	 * des Petrinetzes darstellt.
+	 * @return die Wurzel
+	 */
+	public Marking getRoot() {
+		return root;
+	}
+	
+	/**
+	 * Vervollständigt den Erreichbarkeitsgraphen.
+	 * @param petriNet Petrinetz, das analysiert werden soll
+	 */
+	public void analyze(PetriNet petriNet) {
+		Set<String> transitionNames = new HashSet<String>();
+		petriNet.getTransitions().forEach(t -> transitionNames.add(t.getId()));
+		
+		List<Marking> fireQueue = new ArrayList<Marking>();
+		markings.forEach(marking -> fireQueue.add(marking));
+		
+		Set<Marking> alreadyFired = new HashSet<Marking>();
+				
+		while (fireQueue.size() > 0) {
+			Marking origin = fireQueue.get(0);
+			for (String transitionName : transitionNames) {
+				PetriNet firingNet = null;
+				try {
+					firingNet = petriNet.fromMarking(origin);
+				} catch (NodeNotFoundException e) {
+					System.out.println(e.getMessage());
+					fireQueue.remove(origin);
+					break;
+				}
+				
+				try {
+					firingNet.fire(transitionName);
+					Marking afterFire = firingNet.getMarking();
+					Marking newlyCreated = registerMarking(origin, afterFire);
+					if (!alreadyFired.contains(newlyCreated)) {
+						fireQueue.add(newlyCreated);
+					}
+					alreadyFired.add(newlyCreated);
+				} catch (CannotFireException e) {
+					System.out.println(transitionName + " nada fiero: " + e.getMessage());
+					continue;
+				}
+			}
+			
+			fireQueue.remove(origin);
+		}
+	}
+	
+	/**
+	 * IDEA Starte mit Sammelbecken aller Markings, gehe
+	 * dann zurück und bestätige alle, die du auf dem Weg findest
+	 * @param target
+	 * @return
+	 */
+	private Set<Marking> canReach(Marking target) {
+		Set<Marking> canReachTarget = new HashSet<Marking>();
+		for (Marking marking : markings) {
+			if (reachable(marking, target)) {
+				canReachTarget.add(marking);
+			}
+		}
+		return canReachTarget;
+	}
+	
+	
+	private boolean reachable(Marking from, Marking to) {
+		return true;
+	}
+	
+	/**
+	 * Registiert die aktuelle Markierung target als einen neuen
+	 * Knoten im Erreichbarkeitsgraphen, der von origin ausgeht.
+	 * @param origin 
+	 * @param target
+	 */
+	/*public void registerMarking(Marking origin, Marking target) {
+		Marking nonDuplicateOrigin = getSameMarking(origin);
+		Marking nonDuplicateTarget = getSameMarking(target);
+		nonDuplicateOrigin.registerTarget(nonDuplicateTarget);
+		nonDuplicateTarget.registerOrigin(nonDuplicateOrigin);
+		markings.add(nonDuplicateOrigin);
+		markings.add(nonDuplicateTarget);
+	}*/
+	
+	public Marking registerMarking(Marking origin, Marking target) {
+		Marking nonDuplicateOrigin = getSameMarking(origin);
+		Marking nonDuplicateTarget = getSameMarking(target);
+		nonDuplicateOrigin.registerTarget(nonDuplicateTarget);
+		nonDuplicateTarget.registerOrigin(nonDuplicateOrigin);
+		// Vorteile des Sets: es werden keine Duplikate eingetragen
+		markings.add(nonDuplicateOrigin);
+		markings.add(nonDuplicateTarget);
+		// Zuletzt Verweis auf das Ziel ausgegeben, mit dem weitergearbeitet werden kann.
+		return nonDuplicateTarget;
+	}
+	
+	/**
+	 * Wenn bereits eine gleiche Markierung im Erreichbarkeitsgraphen
+	 * existiert, wird diese zurückgeliefert, ansonsten die neue
+	 * Vergleichsmarkierung.
+	 * @param other
+	 * @return
+	 */
+	private Marking getSameMarking(Marking comparison) {
+		for (Marking known: markings) {
+			if (haveSameTokenDistribution(known, comparison)) {
+				return known;
+			}
+		}
+		
+		return comparison;
+	}
+	
+	/**
+	 * Liefert true, wenn beide Markierungen die gleiche Zahl an Tokens
+	 * an der gleichen Stelle besitzen.
+	 * @param m1
+	 * @param m2
+	 * @return
+	 */
+	private static boolean haveSameTokenDistribution(Marking m1, Marking m2) {
+		Map<String, Integer> tokens1 = m1.getMarking();
+		Map<String, Integer> tokens2 = m2.getMarking();
+		for (String key : tokens1.keySet()) {
+			if (tokens1.get(key) != tokens2.get(key)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	private boolean fulfillsCriterion(Marking origin, Marking comparison) {
+		Map<String, Integer> originTokens = origin.getMarking();
+		Map<String, Integer> comparisonTokens = comparison.getMarking();
+		Set<String> placeIds = originTokens.keySet();
+		
+		boolean atLeastOneLarger = false;
+		for (String placeId : placeIds) {
+			int originNumTokens = originTokens.get(placeId);
+			int comparisonNumTokens = comparisonTokens.get(placeId);
+			
+			if (comparisonNumTokens < originNumTokens) {
+				return false;
+			}
+			
+			if (!atLeastOneLarger) {
+				atLeastOneLarger = comparisonNumTokens > originNumTokens;
+			}
+		}
+		
+		return atLeastOneLarger;		
+	}
+	
+	/**
+	 * Übersichtliche Darstellung als String, genutzt, um Netze ohne
+	 * GUI halbwegs visualisieren zu können.
+	 */
+	@Override
+	public String toString() {
+		String repr = "";
+		for (Marking marking : markings) {
+			repr += marking.toString() + "\n";
+			for (Marking target : marking.getTargets())
+				repr += "   zu  " + target.toString() + "\n";
+			for (Marking origin : marking.getOrigins())
+				repr += "   von " + origin.toString() + "\n";			
+		}
+		
+		return repr;
+	}
+}

@@ -1,0 +1,54 @@
+package model;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class MarkingToMarkingArc extends Arc {
+	private static Set<String> usedIds = new HashSet<String>();
+	private final String sourceTransitionId;
+	private final String sourceTransitionName;
+	
+	public MarkingToMarkingArc(Marking from, Marking to, String sourceTransitionId, String sourceTransitionName) {
+		super(getNewId(), from, to);
+		
+		// Warum nicht gleich die Transition?
+		this.sourceTransitionId = sourceTransitionId;
+		this.sourceTransitionName = sourceTransitionName;
+	}
+	
+	public Marking getFrom() {
+		return (Marking) from;
+	}
+	
+	public Marking getTo() {
+		return (Marking) to;
+	}
+	
+	private static String getNewId() {
+		int idNum = 1;
+		String proposedId = "ma1";
+		while (usedIds.contains(proposedId)) {
+			idNum++;
+			proposedId = "ma" + String.valueOf(idNum);
+		}
+		
+		usedIds.add(proposedId);
+		return proposedId;
+	}
+	
+	public String getSourceTransitionId() {
+		return sourceTransitionId;
+	}
+	
+	public String getSourceTransitionName() {
+		return sourceTransitionName;
+	}
+
+	public boolean hasMarkings(Marking from, Marking to) {
+		Marking thisFrom = (Marking) from;
+		Marking thisTo = (Marking) to;
+		
+		return thisFrom.equals(from) && thisTo.equals(to);
+	}
+
+}

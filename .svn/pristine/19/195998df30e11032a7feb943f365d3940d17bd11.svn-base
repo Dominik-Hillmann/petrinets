@@ -1,0 +1,30 @@
+package model;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class Transition extends Node {
+	private Set<Place> preset = new HashSet<Place>();
+	private Set<Place> postset = new HashSet<Place>();
+	
+	public Transition(String id, int posX, int posY) {
+		super(id, posX, posY);
+	}
+	
+	public Transition(String id) {
+		super(id);
+	}
+	
+	public void addToPreset(Place place) {
+		preset.add(place);
+	}
+	
+	public void addToPostset(Place place) {
+		postset.add(place);
+	}
+	
+	
+	public void fire() {
+		
+	}
+}

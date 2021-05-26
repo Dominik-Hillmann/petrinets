@@ -1,0 +1,197 @@
+package controller;
+
+import model.CannotFireException;
+import model.GraphIsUnlimitedException;
+import model.Marking;
+import model.NodeModel;
+import model.NodeNotFoundException;
+import model.PetriNet;
+import model.Place;
+import model.ReachabilityGraph;
+//import view.VisualPetriGraph;
+//import mypackage.view.MyFrame;
+import view.GraphsFrame;
+import view.VisualPetriGraph;
+import view.VisualReachabilityGraph;
+
+public class Controller {
+
+	/** Hauptfenster der Anwendung */
+	private GraphsFrame frame;
+
+	/** Graph, der angezeigt wird */
+	private VisualPetriGraph petriGraph;
+	private VisualReachabilityGraph reachGraph;
+	
+	// TODO alle Vorkommnisse hier von petriNet über Operationen auf petriGraph usw. erlangen
+	private PetriNet petriNet;
+	private ReachabilityGraph reachNet;
+	
+//	private Node markedNode = null;
+	
+	
+//	private boolean isAnalyzed = false;
+	
+	/**
+	 * 
+	 * @param frame
+	 * @param petriNet
+	 * @param reachNet
+	 */
+	public Controller(GraphsFrame frame, PetriNet petriNet, ReachabilityGraph reachNet) {
+		this.frame = frame;	
+		
+		// Initialisierung der Modelle der Netze.
+		this.petriNet = petriNet;
+		petriNet.getMarking();
+		this.reachNet = reachNet;
+		
+		// Initialisierung der visuellen Graphen.
+		petriGraph = new VisualPetriGraph(petriNet);
+		reachGraph = new VisualReachabilityGraph(reachNet);
+	}
+	
+	/**
+	 * 
+	 * @param id
+	 * @throws NodeNotFoundException
+	 */
+	public void clickNodeInGraph(String id) throws NodeNotFoundException {
+		NodeModel clickedModelNode = petriNet.getNodeById(id);
+		
+		if (clickedModelNode instanceof Place) {
+			clickPlaceInGraph(id);
+		} else {
+			clickTransitionInGraph(id);
+		}
+	}
+	
+	
+	private void clickPlaceInGraph(String id) throws NodeNotFoundException {
+		petriGraph.mark(id);
+	}
+	
+	
+	private void clickTransitionInGraph(String id) throws NodeNotFoundException {
+		// Update Petrinetz
+		Marking before = petriNet.getMarking();
+		try {
+			petriNet.fire(id);
+			petriGraph.update();
+			frame.addText("Pertinetz konnte feuern und Änderung wird angezeigt.");
+		} catch (CannotFireException e) {
+			frame.addText("Das Petrinetz kann diese Transition nicht feuern.");
+			return;
+		}
+		
+		// Update Erreichbarkeitsgraph
+		Marking after = petriNet.getMarking();
+		after.setSourceTransitionId(id);
+		reachNet.registerMarking(before, after);
+		reachGraph.update(reachNet);
+		// markiere die Node und speichere sie für weitere OPs
+		// erweitere den reach
+	}
+	
+	/**
+	 * 
+	 * @return <code>true</code>, wenn der Graph beschränkt ist, sonst
+	 * <code>false</code>.
+	 */
+	public boolean analyze() {
+		try {
+			reachNet.analyze(petriNet);
+			reachGraph.update(reachNet);
+			
+			return true;
+		} catch (GraphIsUnlimitedException e) {
+			frame.addText("Petrinetz ist unbeschränkt.\nm: " + e.getStart().guiName() + "\nm': " + e.getEnd().guiName());
+			frame.addText("Der Pfad: ");
+			e.getFullPath().forEach(marking -> frame.addText(marking.toString()));
+			
+			reachGraph.update(reachNet);
+			reachGraph.markAbortCriterion(e.getFullPath());
+			
+			return false;
+		}
+	}
+	
+	/**
+	 * Erhöht die Zahl der Tokens in der markierten Stelle um 1.
+	 */
+	public void markedPlusOne() {
+		try {
+			petriGraph.markedPlusOne();
+			Marking newRoot = petriGraph.getPetriNet().getMarking();
+			ReachabilityGraph reachNet = reachGraph.getReachNet();
+			// Hier ist wichtig, dass resetRoot auf die aktuell hinterlegte Wurzel zurücksetzt,
+			// während resetOriginalRoot auf die Wurzel zurücksetzt, die dem Konstruktor übergeben
+			// worden ist.
+			reachNet.resetRoot(newRoot);
+			reachNet.reset();
+			reachGraph.update(reachNet);			
+		} catch (NodeNotFoundException e) {
+			frame.addText(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Zieht einen Token von der markierten Stelle ab bis minimal 0 Tokens 
+	 * verbleiben.
+	 */
+	public void markedMinusOne() {
+		try {
+			petriGraph.markedMinusOne();
+			Marking newRoot = petriGraph.getPetriNet().getMarking();
+			ReachabilityGraph reachNet = reachGraph.getReachNet();
+			
+			reachNet.resetRoot(newRoot);
+			reachNet.reset();
+			reachGraph.update(reachNet);
+		} catch (NodeNotFoundException e) {
+			frame.addText(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Setzt den Erreichbarkeitsgraphen auf seinen aktuellen Wurzelknoten zurück.
+	 */
+	public void resetReachToCurrentRoot() {
+		reachNet.reset();
+		reachGraph.update(reachNet);
+	}
+	
+	/**
+	 * Setzt den das Petrinetz und den angezeigten Graphen in den Originalzustand
+	 * zurück, d.h. zur anfänglichen Besetzung von Marken zu ihren Stellen.
+	 */
+	public void resetPetriGraph() {		
+		try {
+			petriNet.resetTokens();
+		} catch (NodeNotFoundException e) {
+			frame.addText("Fehler: es wurde eine Stelle nicht gefunden: " + e.getMessage());
+		}
+		petriGraph.update();
+	}
+	
+	/**
+	 * Setzt den Erreichbarkeitsgraphen zurück in seine Ursprungsform, d.h.
+	 * der Graph, der nur aus seinem ursprünglichen Wurzelknoten besteht.
+	 */
+	public void resetReachGraph() {
+		reachNet.resetOriginalRoot();
+		reachNet.reset();
+		reachGraph.update(reachNet);
+	}
+	
+		
+	
+	public VisualPetriGraph getPetriGraph() {
+		return petriGraph;
+		
+	}
+	
+	public VisualReachabilityGraph getReachGraph() {
+		return reachGraph;
+	}	
+}

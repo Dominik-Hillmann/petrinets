@@ -1,0 +1,110 @@
+package view;
+
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.KeyEvent;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+
+public class TestFrame extends JFrame {
+	
+	
+	/** Von Ecliplse generierte ID. */
+	private static final long serialVersionUID = -7853267457644325182L;
+	
+    private JSplitPane splitPane;
+    
+    private JPanel topPanel;
+    private JSplitPane graphicsSplit;
+    private JPanel leftGraph;
+    private JPanel rightGraph;
+    
+    private JPanel bottomPanel;
+    private JScrollPane scrollPane; // Macht Text scrollbar.
+    private JTextArea textArea;     // Der Text.
+    private JPanel toolbar;
+    private JButton analyseButton;
+    private JButton deleteButton; 
+
+	public TestFrame(String title) {
+		super(title);
+		System.setProperty(
+			"org.graphstream.ui.renderer", 
+			"org.graphstream.ui.j2dviewer.J2DGraphRenderer"
+		);
+		
+		splitPane = new JSplitPane();
+		
+		topPanel = new JPanel();
+		graphicsSplit = new JSplitPane();
+		leftGraph = new JPanel();
+		rightGraph = new JPanel();        
+		
+		bottomPanel = new JPanel();
+		scrollPane = new JScrollPane();
+		textArea = new JTextArea();
+		
+		toolbar = new JPanel();
+		analyseButton = new JButton("Analysiere");
+		deleteButton = new JButton("Lösche EG");
+		
+		// Standardgröße und Standardlayout.
+		setPreferredSize(new Dimension(1000, 700));
+		getContentPane().setLayout(new GridLayout());
+		getContentPane().add(splitPane);
+		
+		// Einstellungen an der obersten SplitPane.
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		splitPane.setDividerLocation(200);
+		splitPane.setTopComponent(topPanel);
+		splitPane.setBottomComponent(bottomPanel);
+		
+		// Einstellungen oberes Panel.
+		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+		topPanel.add(graphicsSplit);
+		graphicsSplit.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+		graphicsSplit.setDividerLocation(500);
+		graphicsSplit.setLeftComponent(leftGraph);
+		graphicsSplit.setRightComponent(rightGraph);
+		
+		
+		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+		bottomPanel.add(scrollPane);
+		scrollPane.setViewportView(textArea);
+		textArea.setEditable(false);
+		bottomPanel.add(toolbar);
+		toolbar.add(analyseButton);
+		toolbar.add(deleteButton);
+		
+		analyseButton.addActionListener((event) -> textArea.append("ICH ANALYSIERE!\n"));
+		deleteButton.addActionListener((event) -> textArea.append("ICH LÖSCHE!!\n"));
+		
+		createMenuBar();
+		
+		pack();
+		setVisible(true);
+	}
+	
+	
+	private void createMenuBar() {
+		JMenuBar menuBar = new JMenuBar();
+		JMenu fileMenu = new JMenu("Datei");
+		JMenuItem print = new JMenuItem("Print");
+		print.setMnemonic(KeyEvent.VK_1);
+		print.setToolTipText("Printed zu Standard out.");
+		print.addActionListener((event) -> textArea.append("MENÜLEISTE!!!\n"));
+		fileMenu.add(print);
+		menuBar.add(fileMenu);
+		setJMenuBar(menuBar);		
+	}
+}
+ 

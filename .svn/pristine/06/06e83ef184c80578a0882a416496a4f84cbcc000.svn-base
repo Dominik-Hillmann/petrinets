@@ -1,0 +1,57 @@
+package view;
+
+import org.graphstream.graph.implementations.MultiGraph;
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Node;
+
+import model.Arc;
+import model.PetriNet;
+import model.Place;
+import model.Transition;
+
+public class TestGraph extends MultiGraph {
+	private final PetriNet sourceNet;
+	private final String CSS_FILE = "url(" + 
+    		System.getProperty("user.dir") +
+    		"/resources/graph.css)";
+	
+	public TestGraph(PetriNet petriNet) {
+		super("Petrinetz");		
+		sourceNet = petriNet;
+
+		// Hier wird der Stylesheet angewandt.
+		addAttribute("ui.stylesheet", CSS_FILE);
+		createGraphNodes();
+		
+	}
+	
+	private void createGraphNodes() {
+		for (Place place : sourceNet.getPlaces()) {
+			Node placeGraphNode = addNode(place.getId());
+			placeGraphNode.addAttribute("ui.label", String.valueOf(place.getTokens()));
+			placeGraphNode.addAttribute("ui.class", "place");
+			int x = place.getPosition().getX();
+			int y = -place.getPosition().getY();
+			placeGraphNode.addAttribute("xy", x, y);
+		}
+				
+		for (Transition transition : sourceNet.getTransitions()) {
+			Node transitionGraphNode = addNode(transition.getId());
+//			transitionGraphNode.addAttribute("ui.label", "T");
+			transitionGraphNode.addAttribute("ui.class", "transition");
+			int x = transition.getPosition().getX();
+			int y = -transition.getPosition().getY();
+			transitionGraphNode.addAttribute("xy", x, y);
+		}
+		
+		for (Arc arc : sourceNet.getArcs()) {
+			System.out.print(arc.getFrom().toString() + " " + arc.getTo().toString() + " ");
+			String fromId = arc.getFrom().getId();
+			String toId = arc.getTo().getId();
+			Node from = getNode(fromId);
+			Node to = getNode(toId);
+			addEdge(arc.getId(), from, to, true);
+		}
+	}
+
+}

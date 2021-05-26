@@ -1,0 +1,54 @@
+package view;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.MultiGraph;
+
+import model.Arc;
+import model.Marking;
+import model.Pair;
+import model.ReachabilityGraph;
+
+public class GraphicReachabilityGraph extends MultiGraph {
+	private final ReachabilityGraph sourceNet;
+	private final String CSS_FILE = "url(" + 
+    		System.getProperty("user.dir") +
+    		"/ressources/graph.css)";
+	
+	public GraphicReachabilityGraph(ReachabilityGraph reach) {
+		super("Erreichbarkeitsgraph");
+		sourceNet = reach;
+		
+		addAttribute("ui.stylesheet", CSS_FILE);
+		createGraphNodes();
+	}
+	
+	private void createGraphNodes() {
+		for (Marking marking : sourceNet.getMarkings()) {
+			Node markingGraphicalNode = addNode(marking.getId());
+			markingGraphicalNode.addAttribute("ui.class", "marking");
+			markingGraphicalNode.addAttribute("ui.label", marking.getName());
+			
+			if (marking.equals(sourceNet.getRoot())) {
+				markingGraphicalNode.addAttribute("ui.class", "root");
+			}
+		}
+		
+		// Da der Graph nicht bipartit ist, werden Graphen doppelt gezählt.
+		// Diese werden hiermit gefiltert.
+		for (Arc arc : sourceNet.getArcs()) {
+			String fromId = arc.getFrom().getId();
+			String toId = arc.getTo().getId();
+			
+			Node testNode = getNode(fromId);
+			System.out.println(testNode.toString());
+//			System.out.println(arc.getId() + ": " + fromId + " ---> " + toId);
+			Node from = getNode(fromId);
+			Node to = getNode(toId);
+			addEdge(arc.getId(), from, to, true);
+
+		}
+	}
+}

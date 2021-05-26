@@ -1,0 +1,174 @@
+package view;
+
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+
+import org.graphstream.ui.swingViewer.ViewPanel;
+import org.graphstream.ui.view.Viewer;
+import org.graphstream.ui.view.ViewerPipe;
+
+import controller.ClickListener;
+import controller.Controller;
+import model.GraphIsUnlimitedException;
+import model.PetriNet;
+import model.ReachabilityGraph;
+
+public class GraphsFrame extends JFrame {
+	
+	/** Von Ecliplse generierte ID. */
+	private static final long serialVersionUID = -7853267457644325182L;
+	
+	Controller controller;
+	
+	private JSplitPane splitPane;
+
+	private JPanel topPanel;
+	private JSplitPane graphicsSplit;
+	private ViewPanel leftGraph;
+	private JPanel rightGraph;
+
+	private JPanel bottomPanel;
+	private JScrollPane scrollPane; // Macht Text scrollbar.
+	private JTextArea textArea; // Der Text.
+	private JPanel toolbar;
+	private JButton analyseButton;
+	private JButton deleteButton;
+
+	public GraphsFrame(PetriNet petriNet, ReachabilityGraph reach) {
+		super("Dominik Hillmann, Matrikelnr. 6764860");
+		System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+		
+		controller = new Controller(this, petriNet, reach);
+		
+		splitPane = new JSplitPane();
+
+		topPanel = new JPanel();
+		graphicsSplit = new JSplitPane();
+		// leftGraph = new JPanel();
+		rightGraph = new JPanel();
+
+		bottomPanel = new JPanel();
+		scrollPane = new JScrollPane();
+		textArea = new JTextArea();
+
+		initPetriGraph(petriNet);
+		initReachGraph(reach);
+
+		toolbar = new JPanel();
+		analyseButton = new JButton("Analysiere");
+		deleteButton = new JButton("Lösche EG");
+
+		// Standardgröße und Standardlayout.
+		setPreferredSize(new Dimension(1000, 700));
+		getContentPane().setLayout(new GridLayout());
+		getContentPane().add(splitPane);
+
+		// Einstellungen an der obersten SplitPane.
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		splitPane.setDividerLocation(200);
+		splitPane.setTopComponent(topPanel);
+		splitPane.setBottomComponent(bottomPanel);
+
+		// Einstellungen oberes Panel.
+		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+		topPanel.add(graphicsSplit);
+		graphicsSplit.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+		graphicsSplit.setDividerLocation(500);
+		graphicsSplit.setLeftComponent(leftGraph);
+		graphicsSplit.setRightComponent(rightGraph);
+
+		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+		bottomPanel.add(scrollPane);
+		scrollPane.setViewportView(textArea);
+		textArea.setEditable(false);
+		bottomPanel.add(toolbar);
+		toolbar.add(analyseButton);
+		toolbar.add(deleteButton);
+
+		analyseButton.addActionListener((event) -> {
+			textArea.append("Errechne Erreichbarkeitsgraphen des Petrinetzes.\n");
+			controller.analyze();
+		});
+		deleteButton.addActionListener((event) -> {
+			textArea.append("Setze den Erreichbarkeitsgraphen auf seinen Anfangszustand zurück.\n");
+			controller.reset();
+		});
+
+		createMenuBar();
+
+		pack();
+		setVisible(true);
+	}
+	
+//	private void analysePetriNet() {
+//		System.out.println("Analyse\n");
+//		textArea.append("Analyse\n");
+//		try {
+//			Viewer viewer = new Viewer(controller.updateReachability(),
+//					Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+//			rightGraph = viewer.addDefaultView(false);
+//			textArea.append("Hinzugefügt.");
+//		} catch (GraphIsUnlimitedException e) {
+//			textArea.append("Fehlgeschlagene Analyse: " + e.getMessage());
+//		}
+//	}
+
+	private void initReachGraph(ReachabilityGraph reachGraph) {
+//		Viewer viewer = new Viewer(new VisualReachabilityGraph(reachGraph),
+//				Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+		Viewer viewer = new Viewer(controller.getReachGraph(), Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+		viewer.enableAutoLayout();
+		rightGraph = viewer.addDefaultView(false);
+		ViewerPipe viewerPipe = viewer.newViewerPipe();
+	}
+
+	private void initPetriGraph(PetriNet petriNet) {
+		Viewer viewer = new Viewer(controller.getPetriGraph(), Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+		viewer.disableAutoLayout();
+		leftGraph = viewer.addDefaultView(false);
+
+		ViewerPipe viewerPipe = viewer.newViewerPipe();
+		ClickListener clickListener = new ClickListener(controller);
+		viewerPipe.addViewerListener(clickListener);
+
+		leftGraph.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent me) {
+				// System.out.println("MyFrame - mousePressed: " + me);
+				viewerPipe.pump();
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent me) {
+				// System.out.println("MyFrame - mouseReleased: " + me);
+				viewerPipe.pump();
+			}
+		});
+	}
+
+	private void createMenuBar() {
+		JMenuBar menuBar = new JMenuBar();
+		JMenu fileMenu = new JMenu("Datei");
+		JMenuItem print = new JMenuItem("Print");
+		print.setMnemonic(KeyEvent.VK_1);
+		print.setToolTipText("Printed zu Standard out.");
+		print.addActionListener((event) -> textArea.append("MENÜLEISTE!!!\n"));
+		fileMenu.add(print);
+		menuBar.add(fileMenu);
+		setJMenuBar(menuBar);
+	}
+}

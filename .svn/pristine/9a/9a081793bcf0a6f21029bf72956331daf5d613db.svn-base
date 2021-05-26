@@ -1,0 +1,36 @@
+package model;
+
+public abstract class Node {
+	protected String id;
+	protected String name;
+	protected int posX;
+	protected int posY;
+	
+	public Node(String id, int posX, int posY) {
+		this.id = id;
+		this.posX = posX;
+		this.posY = posY;
+	}
+	
+	
+	public Node(String id) {
+		this.id = id;
+		this.posX = -1;
+		this.posY = -1;
+	}
+	
+	
+	public void setPosition(int x, int y) {
+		posX = x;
+		posY = y;
+	}	
+	
+	public String getId() {
+		return id;
+	}
+	
+	
+	public boolean hasId(String compareId) {
+		return compareId.equals(id);
+	}
+}

@@ -1,0 +1,37 @@
+package main;
+import java.io.File;
+
+import model.IllegalArcException;
+import model.NodeNotFoundException;
+import model.PnmlParser;
+import propra.pnml.PNMLWopedParser;
+
+public class Petrinets_6764860_Hillmann_Dominik_Fred {
+
+	public static void main(String[] args) throws NodeNotFoundException, IllegalArcException {
+		File pnml1 = new File("C:\\Users\\Dominik USER\\eclipse-workspace\\ProPra-WS20-Basis\\Beispiele\\151-B1-N05-A07-Example02.pnml");
+		File pnml2 = new File("C:\\Users\\Dominik USER\\eclipse-workspace\\ProPra-WS20-Basis\\Beispiele\\230-B0-P02-Qxx-Counter.pnml");
+		File pnml3 = new File("C:\\Users\\Dominik USER\\eclipse-workspace\\ProPra-WS20-Basis\\Beispiele\\231-B0-P02-Qxx-CounterMitAbfluss.pnml");
+		System.out.println("PNML 1");
+		if (pnml1.exists()) {
+			new PnmlParser(pnml1);
+		} else {
+			System.err.println("Die Datei " + pnml1.getAbsolutePath() + " wurde nicht gefunden!");
+		}
+		System.out.println();
+		System.out.println("PNML 2");
+		if (pnml2.exists()) {
+			new PnmlParser(pnml2);
+		} else {
+			System.err.println("Die Datei " + pnml2.getAbsolutePath() + " wurde nicht gefunden!");
+		}
+		System.out.println();
+		System.out.println("PNML 3");		
+		if (pnml3.exists()) {
+			new PnmlParser(pnml3);
+		} else {
+			System.err.println("Die Datei " + pnml3.getAbsolutePath() + " wurde nicht gefunden!");
+		}
+	}
+
+}

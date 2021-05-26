@@ -1,0 +1,51 @@
+/*
+	Dies ist die css-Datei, in der das Layout des Graphen beschrieben ist.
+*/
+
+/*
+	Style-Angabe fuer einen Knoten
+*/
+node {
+	size: 30px;
+	
+	fill-color: #99ccff;
+	
+	text-color: #003366;
+	text-size: 14;
+
+	stroke-mode: plain;
+	stroke-color: #003366;
+	stroke-width: 1px;
+}
+
+/*
+   zusaetzliches Attribut "highlight" fuer einen Knoten, der
+   hervorgehoben werden soll
+*/
+node.highlight {
+	text-style: bold;
+	
+	stroke-color: #cc0000;
+	stroke-width: 3px;
+}
+
+
+/*
+   zusaetzliches Attribut "bild" fuer einen Knoten mit einer Abbildung
+*/
+node.bild {
+	fill-mode: image-scaled;
+	fill-image: url('images/logo_grau.png');
+}
+
+/*
+	Style-Angabe fuer eine Kante
+*/
+edge {
+	fill-color: #003366;
+	text-color: #003366;
+	arrow-shape: arrow;
+	arrow-size: 9px, 6px;
+	text-size:  12;
+	text-color: purple;
+}

@@ -1,0 +1,127 @@
+package model;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map;
+
+public class ReachabilityGraph {
+	/** Die Knoten des Erreichbarkeitsgraphen. */
+	private Set<Marking> markings = new HashSet<Marking>();
+	/** 
+	 * Wurzel des Graphen und Markierung des Petrinetzes bei 
+	 * Erstellung des Erreichbarkeitsgraphen. 
+	 */
+	private Marking root;
+	
+	public ReachabilityGraph(PetriNet petriNet) {
+		// Initiale Markierung
+		root = petriNet.getMarking();
+		markings.add(root);
+	}
+	
+	
+	public Marking getRoot() {
+		return root;
+	}
+	
+	/*
+	public void registerMarking(Marking origin) {
+		Marking nonDuplicateOrigin = getSameMarking(origin);
+		Marking current = getSameMarking(petriNet.getMarking());
+		origin.registerTarget(current);
+		current.registerOrigin(nonDuplicateOrigin);
+		markings.add(current);
+	}
+	*/
+	
+	/**
+	 * Registiert die aktuelle Markierung target als einen neuen
+	 * Knoten im Erreichbarkeitsgraphen, der von origin ausgeht.
+	 * @param origin 
+	 * @param target
+	 */
+	public void registerMarking(Marking origin, Marking target) {
+		Marking nonDuplicateOrigin = getSameMarking(origin);
+		Marking nonDuplicateTarget = getSameMarking(target);
+		nonDuplicateOrigin.registerTarget(nonDuplicateTarget);
+		nonDuplicateTarget.registerOrigin(nonDuplicateOrigin);
+		markings.add(nonDuplicateOrigin);
+		markings.add(nonDuplicateTarget);
+	}
+	
+	/**
+	 * Wenn bereits eine gleiche Markierung im Erreichbarkeitsgraphen
+	 * existiert, wird diese zurückgeliefert, ansonsten die neue
+	 * Vergleichsmarkierung.
+	 * @param other
+	 * @return
+	 */
+	private Marking getSameMarking(Marking comparison) {
+		for (Marking known: markings) {
+			if (haveSameTokenDistribution(known, comparison)) {
+				return known;
+			}
+		}
+		
+		return comparison;
+	}
+	
+	/**
+	 * Liefert true, wenn beide Markierungen die gleiche Zahl an Tokens
+	 * an der gleichen Stelle besitzen.
+	 * @param m1
+	 * @param m2
+	 * @return
+	 */
+	private static boolean haveSameTokenDistribution(Marking m1, Marking m2) {
+		Map<String, Integer> tokens1 = m1.getMarking();
+		Map<String, Integer> tokens2 = m2.getMarking();
+		for (String key : tokens1.keySet()) {
+			if (tokens1.get(key) != tokens2.get(key)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	private boolean fulfillsCriterion(Marking origin, Marking comparison) {
+		Map<String, Integer> originTokens = origin.getMarking();
+		Map<String, Integer> comparisonTokens = comparison.getMarking();
+		Set<String> placeIds = originTokens.keySet();
+		
+		boolean atLeastOneLarger = false;
+		for (String placeId : placeIds) {
+			int originNumTokens = originTokens.get(placeId);
+			int comparisonNumTokens = comparisonTokens.get(placeId);
+			
+			if (comparisonNumTokens < originNumTokens) {
+				return false;
+			}
+			
+			if (!atLeastOneLarger) {
+				atLeastOneLarger = comparisonNumTokens > originNumTokens;
+			}
+		}
+		
+		return atLeastOneLarger;		
+	}
+	
+	/**
+	 * Übersichtliche Darstellung als String, genutzt, um Netze ohne
+	 * GUI halbwegs visualisieren zu können.
+	 */
+	@Override
+	public String toString() {
+		String representation = "";
+		for (Marking marking : markings) {
+			representation += marking.toString() + "\n";
+			for (Marking target : marking.getTargets())
+				representation += "   zu  " + target.toString() + "\n";
+			for (Marking origin : marking.getOrigins())
+				representation += "   von " + origin.toString() + "\n";			
+		}
+		
+		return representation;
+	}
+}

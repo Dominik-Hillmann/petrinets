@@ -1,0 +1,10 @@
+package model;
+
+public class IllegalArcException extends Exception {
+	/** Von Eclipse generiert Version ID. */
+	private static final long serialVersionUID = 3995673909159013956L;
+
+	public IllegalArcException(String errorMessage) {
+		super(errorMessage);
+	}
+}

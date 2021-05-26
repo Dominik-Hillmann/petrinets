@@ -1,0 +1,48 @@
+package model;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+
+import propra.pnml.PNMLWopedParser;
+
+public class PnmlParser extends PNMLWopedParser {
+	Set<Place> places = new HashSet<Place>();
+	Set<Transition> transitions = new HashSet<Transition>();
+	
+	public PnmlParser(final File pnml) {
+		super(pnml);
+		initParser();
+		parse();
+		System.out.print("\nZAHL DER TRANSITIONS: ");
+		System.out.println(transitions.size());
+		System.out.println("Sie heißen");
+		for (Transition t : transitions) 
+			System.out.println(t.getId());
+		
+		System.out.print("\nZAHL DER PLACES: ");
+		System.out.println(places.size());
+		for (Place p : places) System.out.println(p.getId());
+	}
+	
+	/*
+	public PetriNet getPetriNet() {
+		Set<Place> places;
+		Set<Transition> transitions;
+
+		
+	}
+	*/
+	
+	@Override
+	public void newTransition(final String id) {
+		System.out.println("\nEine neue Transition! ID: " + id + "\n");
+		transitions.add(new Transition(id));
+	}
+	
+	@Override
+	public void newPlace(final String id) {
+		System.out.println("\nEine neue Stelle mit ID " + id + "\n");
+		places.add(new Place(id));
+	}
+}

@@ -1,0 +1,17 @@
+package model;
+
+public class TransitionToPlaceArc extends Arc {
+	
+	public TransitionToPlaceArc(String id, Transition from, Place to) {
+		super(id, from, to);
+	}
+	
+	
+	public Transition getFrom() {
+		return (Transition) from;
+	}
+	
+	public Place getTo() {
+		return (Place) to;
+	}
+}

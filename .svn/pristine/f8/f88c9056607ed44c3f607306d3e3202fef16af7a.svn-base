@@ -1,0 +1,26 @@
+package model;
+
+public class Token {
+	private Place container;
+	
+	public Token(Place container) {
+		this.container = container;
+	}
+	
+	public Token() {
+		container = null;
+	}
+	
+	public Place getContainer() {
+		return container;
+	}
+	
+	public void setContainer(Place replaceContainer) {
+		container = replaceContainer;
+	}
+	
+	@Override
+	public String toString() {
+		return "Token in " + container.toString();
+	}
+}

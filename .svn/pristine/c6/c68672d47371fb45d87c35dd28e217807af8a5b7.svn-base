@@ -1,0 +1,29 @@
+package controller;
+
+import org.graphstream.ui.view.ViewerListener;
+
+import model.NodeNotFoundException;
+
+public class ClickListenerRightGraph implements ViewerListener {
+	private Controller controller;
+	
+	public ClickListenerRightGraph(Controller controller) {
+		this.controller = controller;
+	}
+
+	@Override
+	public void viewClosed(String viewName) { }
+
+	@Override
+	public void buttonPushed(String id) {
+		try {
+			controller.clickNodeInReachGraph(id);
+		} catch (NodeNotFoundException e) {
+			System.out.println("NodeNotFoundException in buttonPushed");
+		}		
+	}
+
+	@Override
+	public void buttonReleased(String id) { }
+
+}

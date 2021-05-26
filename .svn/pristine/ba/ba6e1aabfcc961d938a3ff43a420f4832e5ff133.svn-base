@@ -1,0 +1,83 @@
+package controller;
+
+import model.CannotFireException;
+import model.GraphIsUnlimitedException;
+import model.Marking;
+import model.NodeNotFoundException;
+import model.PetriNet;
+import model.ReachabilityGraph;
+//import view.VisualPetriGraph;
+//import mypackage.view.MyFrame;
+import view.GraphsFrame;
+import view.VisualPetriGraph;
+import view.VisualReachabilityGraph;
+
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
+
+public class Controller {
+
+	/** Hauptfenster der Anwendung */
+	private GraphsFrame frame;
+
+	/** Graph, der angezeigt wird */
+	private VisualPetriGraph petriGraph;
+	private VisualReachabilityGraph reachGraph;
+	
+	private PetriNet petriNet;
+	private ReachabilityGraph reachNet;
+	
+	
+	private boolean isAnalyzed = false;
+	
+
+	public Controller(GraphsFrame frame, PetriNet petriNet, ReachabilityGraph reachNet) {
+		this.frame = frame;	
+		this.petriNet = petriNet;
+		this.reachNet = reachNet;
+		
+		petriGraph = new VisualPetriGraph(petriNet);
+		reachGraph = new VisualReachabilityGraph(reachNet);
+	}
+
+	public void clickNodeInGraph(String id) throws NodeNotFoundException {
+		System.out.println("Clicked: " + petriNet.getNodeById(id).toString());
+		System.out.println(petriGraph.getNode(id).getAttribute("ui.class").toString());
+		Marking before = petriNet.getMarking();
+		// Update Petrinetz
+		try {
+			petriNet.fire(id);
+			petriGraph.updateTokens();
+			frame.addText("Pertinetz konnte feuern und Änderung wird angezeigt.\n");
+		} catch (CannotFireException e) {
+			frame.addText("Das Petrinetz kann diese Transition nicht feuern.\n");
+		}
+		
+		// Update Erreichbarkeitsgraph
+		Marking after = petriNet.getMarking();
+		reachNet.registerMarking(before, after);
+		reachGraph.update(reachNet);
+	}
+	
+	public void analyze() {
+		try {
+			reachNet.analyze(petriNet);
+			reachGraph.update(reachNet);
+		} catch (GraphIsUnlimitedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public VisualPetriGraph getPetriGraph() {
+		return petriGraph;
+		
+	}
+	
+	public VisualReachabilityGraph getReachGraph() {
+		return reachGraph;
+	}
+	
+	
+}

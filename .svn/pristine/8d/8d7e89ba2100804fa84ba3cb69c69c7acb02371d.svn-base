@@ -1,0 +1,47 @@
+package model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class GraphIsUnlimitedException extends Exception {
+	
+	/** Von Eclipse generierte ID. */
+	private static final long serialVersionUID = -3596817224615912974L;
+	private Marking start;
+	private Marking end;	
+	private List<Marking> path;
+	
+	public GraphIsUnlimitedException(Marking start, Marking end, List<Marking> path) {
+		super("Es wurde ein Paar von Markierungen gefunden, die das Unbeschränktheitskriterium " +
+				"erfüllen: " + start.toString() + " und " + end.toString() + ".");
+		this.start = start;
+		this.end = end;
+		this.path = path;
+	}
+	
+	public List<Marking> getFullPath() {		
+		return path;
+	}
+	
+	public List<String> getFormattedTransitionPath() {
+		List<String> reversedPath = new ArrayList<String>();
+		for (int i = path.size() - 1; i >= 0; i--) {
+			reversedPath.add(path.get(i).getSourceTransitionId());
+		}
+		
+		boolean firstIsRoot = reversedPath.get(0).equals(ReachabilityGraph.ROOT_NAME);
+		if (firstIsRoot) {
+			reversedPath.remove(ReachabilityGraph.ROOT_NAME);
+		}
+		
+		return reversedPath;
+	}
+	
+	public Marking getStart() {
+		return start;
+	}
+	
+	public Marking getEnd() {
+		return end;
+	}
+}

@@ -1,0 +1,102 @@
+package model;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class Transition extends NodeModel {
+	private Set<TransitionToPlaceArc> postsetArcs = new HashSet<TransitionToPlaceArc>();
+	private Set<PlaceToTransitionArc> presetArcs = new HashSet<PlaceToTransitionArc>();
+	
+//	public Transition(String id, int posX, int posY) {
+//		super(id, posX, posY);
+//	}
+	
+	public Transition(String id, String name, Position pos) {
+		super(id, name, pos);
+	}
+	
+	public Transition(String id) {
+		super(id);
+	}
+		
+	/**
+	 * Registriert eine neue Kante an dieser Transition.
+	 * Wenn die Starttransition nicht diese Transition ist,
+	 * wird sie nicht registriert.
+	 * @param arc Zu registriernde Kante.
+	 */
+	public void register(TransitionToPlaceArc arc) {
+		if (equals(arc.getFrom())) {
+			postsetArcs.add(arc);
+		}
+	}
+	
+	/**
+	 * Registriert eine neue Kante an dieser Transition.
+	 * Wenn die Starttransition nicht diese Transition ist,
+	 * wird sie nicht registriert.
+	 * @param arc Zu registriernde Kante.
+	 */	
+	public void register(PlaceToTransitionArc arc) {
+		if (equals(arc.getTo())) {
+			presetArcs.add(arc);
+		}
+	}
+	
+	public Set<Place> getPostset() {
+		Set<Place> postset = new HashSet<Place>();
+		postsetArcs.forEach(arc -> postset.add(arc.getTo()));
+		
+		return postset;
+	}
+	
+	public Set<Place> getPreset() {
+		Set<Place> preset = new HashSet<Place>();
+		for (PlaceToTransitionArc arc : presetArcs) {
+			preset.add(arc.getFrom());
+		}
+		return preset;
+	}
+	
+	public void fire() throws CannotFireException {
+		Set<Place> preset = getPreset();
+		Set<Place> postset = getPostset();
+		
+		for (Place origin : preset) {
+			if (!origin.canSubtractToken()) {
+				throw new CannotFireException(this, origin);
+			}			
+		}
+		
+		for (Place origin : preset) 
+			origin.subtractToken();
+				
+		for (Place target : postset)
+			target.addToken();
+	}
+	
+	// TODO solche Sachen, auch unterschiedliche Bennenung von in T und P in
+	// der Node-Klasse zusammenfassen
+	@Override
+	public Set<Arc> getArcs() {
+		Set<Arc> arcs = new HashSet<Arc>();
+		arcs.addAll(presetArcs);
+		arcs.addAll(postsetArcs);
+		return arcs;		
+	}
+	
+	@Override
+	public NodeModel copy() {
+		Transition copiedTrans = new Transition(id, name, pos);
+		return copiedTrans;
+	}
+	
+	/** Übersichtliche Darstellung als String. */
+	@Override
+	public String toString() {
+		return "Transition(id=" + id + 
+				", pos=" +  pos.toString() + 
+				", name=" + name +
+				")";
+	}
+}

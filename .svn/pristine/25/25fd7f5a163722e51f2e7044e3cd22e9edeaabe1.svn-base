@@ -1,0 +1,48 @@
+package model;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class IntegrationTests {
+	private Collection collection;
+    
+	@BeforeClass
+	public static void oneTimeSetUp() {
+	}
+ 
+	@AfterClass
+	public static void oneTimeTearDown() {
+		// one-time cleanup code
+	}
+ 
+	@Before
+	public void setUp() {
+		collection = new ArrayList();
+	}
+    
+	@After
+	public void tearDown() {
+		collection.clear();
+	}
+ 
+	@Test
+	public void testEmptyCollection() {
+		assertTrue(collection.isEmpty());
+	}
+    
+	@Test
+	public void testOneItemCollection() {
+		collection.add("itemA");
+		assertEquals(1, collection.size());
+	}
+
+}

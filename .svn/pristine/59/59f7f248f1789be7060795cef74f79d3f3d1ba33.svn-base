@@ -1,0 +1,18 @@
+package model;
+
+/**
+ * Repräsentiert eine gerichtete Kante.
+ * @author Dominik Hillmann, 6764860
+ */
+public abstract class Arc extends PetriNetElement {
+	/** Der Startknoten der Kante. */
+	protected Node from;
+	/** Der Endknoten der Kante. */
+	protected Node to;
+	
+	protected Arc(String id, Node from, Node to) {
+		super(id);
+		this.from = from;
+		this.to = to;
+	}
+}

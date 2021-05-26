@@ -1,0 +1,55 @@
+package view;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.MultiGraph;
+
+import model.Arc;
+import model.Marking;
+import model.Pair;
+import model.ReachabilityGraph;
+
+public class VisualReachabilityGraph extends MultiGraph {
+	private final ReachabilityGraph sourceNet;
+	private final String CSS_FILE = "url(" + 
+    		System.getProperty("user.dir") +
+    		"/ressources/graph.css)";
+	
+	public VisualReachabilityGraph(ReachabilityGraph reach) {
+		super("Erreichbarkeitsgraph");
+		sourceNet = reach;
+		
+		addAttribute("ui.stylesheet", CSS_FILE);
+		createGraphNodes();
+	}
+	
+	private void createGraphNodes() {
+		for (Marking marking : sourceNet.getMarkings()) {
+			Node markingGraphicalNode = addNode(marking.getId());
+			markingGraphicalNode.addAttribute("ui.class", "marking");
+			markingGraphicalNode.addAttribute("ui.label", marking.getName());
+			
+			if (marking.equals(sourceNet.getRoot()))
+				markingGraphicalNode.addAttribute("ui.class", "root");
+		}
+		
+		Set<String> alreadyAddedIds = new HashSet<String>();
+		for (Arc arc : sourceNet.getArcs()) {
+			String fromId = arc.getFrom().getId();
+			String toId = arc.getTo().getId();
+			Pair<String, String> idPair = new Pair<String, String>(fromId, toId);
+			
+			Node from = getNode(fromId);
+			Node to = getNode(toId);
+			boolean idAlreadyUsed = alreadyAddedIds.contains(idPair.toString());
+			if (idAlreadyUsed) {
+				continue;
+			} else {
+				addEdge(arc.getId(), from, to, true);
+				alreadyAddedIds.add(idPair.toString());
+			}	
+		}
+	}
+}

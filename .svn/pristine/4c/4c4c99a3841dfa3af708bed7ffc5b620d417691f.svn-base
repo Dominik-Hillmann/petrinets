@@ -1,0 +1,44 @@
+package model;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class Transition extends Node {
+	private Set<TransitionToPlaceArc> postsetArcs = new HashSet<TransitionToPlaceArc>();
+	private Set<PlaceToTransitionArc> presetArcs = new HashSet<PlaceToTransitionArc>();
+	
+	public Transition(String id, int posX, int posY) {
+		super(id, posX, posY);
+	}
+	
+	public Transition(String id) {
+		super(id);
+	}
+		
+	
+	public void register(TransitionToPlaceArc arc) {
+		postsetArcs.add(arc);
+	}
+	
+	
+	public void register(PlaceToTransitionArc arc) {
+		presetArcs.add(arc);
+	}
+	
+	public Set<Place> getPostset() {
+		Set<Place> postset = new HashSet<Place>();
+		for (TransitionToPlaceArc arc : postsetArcs) {
+			postset.add(arc.getTo());
+		}
+		return postset;
+	}
+	
+	public Set<Place> getPreset() {
+		Set<Place> preset = new HashSet<Place>();
+		for (PlaceToTransitionArc arc : presetArcs) {
+			preset.add(arc.getFrom());
+		}
+		return preset;
+	}
+	
+}

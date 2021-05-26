@@ -1,0 +1,63 @@
+package controller;
+
+import org.graphstream.ui.view.ViewerListener;
+
+import model.NodeNotFoundException;
+
+//import mypackage.controller.Controller;
+
+/**
+ * Dieser Listener reagiert auf Klicks in der Anzeige des Graphen.
+ * 
+ * <p>
+ * Um einen Klick weiter verarbeiten zu können, benötigt der ClickListener eine
+ * Referenz auf den {@link Controller} der Anwendung.
+ * </p>
+ * 
+ * @author ProPra-Team FernUni Hagen
+ */
+public class ClickListenerLeftGraph implements ViewerListener {
+
+	/** Controller der Anwendung */
+	private Controller controller;
+
+	/**
+	 * Im Konstruktor wird der Controller gesetzt.
+	 * 
+	 * @param controller
+	 *            Controller der Anwendung
+	 */
+	public ClickListenerLeftGraph(Controller controller) {
+		this.controller = controller;
+	}
+
+	@Override
+	public void viewClosed(String viewName) {
+		System.out.println("ClickListener - viewClosed: " + viewName);
+		// wird nicht verwendet
+	}
+
+	@Override
+	public void buttonPushed(String id) {
+//		System.out.println("Das ist der Standardlistener mit der ID " + id + ".");
+		if (controller == null) {
+			System.out.println("Controller is null, returning...");
+			return;
+		}
+//		System.out.println("Button push trial " + id + ".");
+		
+		try {
+			controller.clickNodeInGraph(id);
+		} catch (NodeNotFoundException e) {
+			System.out.println(id + " nicht gefunden.");
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void buttonReleased(String id) {
+		System.out.println("Button release triggered");
+//		System.out.println("ClickListener - buttonReleased: " + id);
+		// wird nicht verwendet
+	}
+}

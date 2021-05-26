@@ -1,0 +1,174 @@
+package model;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/** Markierung eines Petrinetzes und Knoten im Erreichbarkeitsgraphen. */
+public class Marking extends NodeModel {
+	/** Bereits verwendete IDs der {@link Marking}s, um neue zu wählen. */
+	private static Set<String> usedIds = new HashSet<String>();
+	/** Verteilung der Zahl der Tokens auf die Stellen, per ID identifiziert. */
+	private Map<String, Integer> tokens;
+	/** Eingehende Kanten des Graphen. */
+	private Set<MarkingToMarkingArc> origins = new HashSet<MarkingToMarkingArc>();
+	/** Ausgehende Kanten des Graphen. */
+	private Set<MarkingToMarkingArc> targets = new HashSet<MarkingToMarkingArc>();
+	/** Die ID der Transition, durch deren Feuern diese Markierung im ER entstand. */
+	private String sourceTransitionId = null;
+	
+	public Marking(Map<String, Integer> tokens) {
+		super(getNewId());
+		this.tokens = tokens;
+	}
+	
+	public Marking(Map<String, Integer> tokens, String sourceTransitionId) {
+		super(getNewId());
+		this.tokens = tokens;
+		this.sourceTransitionId = sourceTransitionId; 
+	}
+	
+	public void registerTarget(MarkingToMarkingArc arc) {
+		if (equals(arc.getFrom())) {
+			targets.add(arc);
+		}
+	}
+	
+	public void registerTarget(Marking target) {
+		registerTarget(new MarkingToMarkingArc(this, target));
+	}
+	
+	
+	public void registerOrigin(MarkingToMarkingArc arc) {
+		if (equals(arc.getTo())) {
+			origins.add(arc);
+		}
+	}
+	
+	public void registerOrigin(Marking origin) {
+		registerOrigin(new MarkingToMarkingArc(origin, this));
+	}
+	
+	public Set<Marking> getOrigins() {
+		Set<Marking> originMarkings = new HashSet<Marking>();
+		origins.forEach(origin -> originMarkings.add(origin.getFrom()));
+		return originMarkings;
+	}
+	
+	public Set<Marking> getTargets() {
+		Set<Marking> targetMarkings = new HashSet<Marking>();
+		targets.forEach(target -> targetMarkings.add(target.getTo()));
+		return targetMarkings;
+	}
+	
+	private static String getNewId() {
+		int idNum = 1;
+		String proposedId = "m1";
+		while (usedIds.contains(proposedId)) {
+			idNum++;
+			proposedId = "m" + String.valueOf(idNum);
+		}
+		
+		usedIds.add(proposedId);
+		return proposedId;
+	}
+	
+	/**
+	 * Die Verteilung der Zahl der Tokens auf die Stellen des Graphen.
+	 * @return Eine Map, die die IDs auf die Zahl der Tokens mappt.
+	 */
+	public Map<String, Integer> getTokenDistribution() {
+		return tokens;
+	}
+	
+	@Override
+	public NodeModel copy() {
+		return null;
+	}
+	
+	@Override
+	public Set<Arc> getArcs() {
+		Set<Arc> arcs = new HashSet<Arc>();
+		arcs.addAll(origins);
+		arcs.addAll(targets);
+		return arcs;
+	}
+	
+	public Arc getArc(String id) throws NodeNotFoundException {
+		Set<Arc> arcs = getArcs();
+		for (Arc arc : arcs) {
+			if (arc.getId().equals(id))
+				return arc;
+		}
+		throw new NodeNotFoundException("Konnte Kante " + id + " nicht finden.");
+	}
+	
+	@Override
+	public String getName() {
+		return guiName();
+	}
+	
+	public String guiName() {
+		List<String> placeIds = new ArrayList<String>(tokens.keySet());
+		Collections.sort(placeIds);
+		
+		String repr = "(";
+		for (String placeId : placeIds) {
+			repr += String.valueOf(tokens.get(placeId)) + "|";
+		}
+		
+		repr = repr.substring(0, repr.length() - 1);
+		repr += ")";
+		
+		return repr;
+	}
+	
+	/**
+	 * Setzt alle Kanten zurück
+	 */
+	public void seperateAll() {
+		origins.clear();
+		targets.clear();
+	}
+	
+	/**
+	 * Die ID der Transition, durch deren Feuern diese Markierung entstand.
+	 * @return Die ID.
+	 */
+	public String getSourceTransitionId() {
+		return sourceTransitionId != null ? sourceTransitionId : "null";
+	}
+	
+	public void setSourceTransitionId(String id) {
+//		try {
+//			sourceTransitionId = !sourceTransitionId.equals(id) ? sourceTransitionId : id;
+//		} catch (NullPointerException e) {
+//			sourceTransitionId = id;
+//		}
+		sourceTransitionId = id;
+	}
+	
+	@Override
+	public String toString() {
+		String representation = guiName() + " Marking(id=" + id + ", [";
+		for (String placeId : tokens.keySet()) {
+			int numTokens = tokens.get(placeId);
+			representation += placeId + "=" + String.valueOf(numTokens) + ", ";	
+		}
+		representation = representation.substring(0, representation.length() - 2);
+		representation += "])";
+		
+		return representation;
+	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public String toLabel() {
+		return guiName();
+	}
+}

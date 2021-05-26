@@ -1,0 +1,88 @@
+package model;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map;
+
+public class ReachabilityGraph {
+	private PetriNet petriNet;
+//	private Set<String> observedPlacesIds;
+	private Set<Marking> markings = new HashSet<Marking>();
+	private Marking start;
+	
+	public ReachabilityGraph(PetriNet petriNet) {
+		this.petriNet = petriNet;
+		// Initiale Markierung
+		start = petriNet.getMarking();
+		markings.add(start);
+//		petriNet.getPlaces().forEach(place -> observedPlacesIds.add(place.getId()));
+		
+	}
+	
+	
+	/**
+	 * Registiert die aktuelle Markierung des Petrinetzes als einen neuen
+	 * Knoten im Erreichbarkeitsgraphen.
+	 * Dabei soll der Parameter origin den vorigen Knoten zeigen.
+	 * @param origin der vorige Knoten.
+	 */
+	public void registerMarking(Marking origin) {
+		Marking nonDuplicateOrigin = getSameMarking(origin);
+		Marking current = getSameMarking(petriNet.getMarking());
+		origin.registerTarget(current);
+		current.registerOrigin(nonDuplicateOrigin);
+		markings.add(current);
+	}
+	
+	/**
+	 * Wenn bereits eine gleiche Markierung im Erreichbarkeitsgraphen
+	 * existiert, wird diese zurückgeliefert, ansonsten die neue
+	 * Vergleichsmarkierung.s
+	 * @param other
+	 * @return
+	 */
+	private Marking getSameMarking(Marking comparison) {
+		for (Marking marking : markings) {
+			if (haveSameMarking(marking, comparison)) {
+				return marking;
+			}
+		}
+		return comparison;
+	}
+	
+	/**
+	 * Liefert true, wenn beide Markierungen die gleiche Zahl an Tokens
+	 * an der gleichen Stelle besitzen.
+	 * @param m1
+	 * @param m2
+	 * @return
+	 */
+	private static boolean haveSameMarking(Marking m1, Marking m2) {
+		Map<String, Integer> tokens1 = m1.getMarking();
+		Map<String, Integer> tokens2 = m2.getMarking();
+		for (String key : tokens1.keySet()) {
+			if (tokens1.get(key) != tokens2.get(key)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	/**
+	 * Übersichtliche Darstellung als String, genutzt, um Netze ohne
+	 * GUI halbwegs visualisieren zu können.
+	 */
+	@Override
+	public String toString() {
+		String representation = "";
+		for (Marking marking : markings) {
+			representation += marking.toString() + "\n";
+			for (Marking target : marking.getTargets())
+				representation += "   zu  " + target.toString() + "\n";
+			for (Marking origin : marking.getOrigins())
+				representation += "   von " + origin.toString() + "\n";			
+		}
+		
+		return representation;
+	}
+}

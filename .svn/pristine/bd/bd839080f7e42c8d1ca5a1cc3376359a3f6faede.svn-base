@@ -1,0 +1,23 @@
+package main;
+import java.io.File;
+
+import model.PnmlParser;
+import propra.pnml.PNMLWopedParser;
+
+public class Petrinets_6764860_Hillmann_Dominik_Fred {
+
+	public static void main(String[] args) {
+		File pnmlDatei = new File("C:\\Users\\Dominik USER\\eclipse-workspace\\ProPra-WS20-Basis\\Beispiele\\151-B1-N05-A07-Example02.pnml");
+		if (pnmlDatei.exists()) {
+			// PNMLWopedParser parser = new PNMLWopedParser(pnmlDatei);
+			// parser.initParser();
+			// parser.parse();
+			
+			new PnmlParser(pnmlDatei);
+		} else {
+			System.err.println("Die Datei " + pnmlDatei.getAbsolutePath() + " wurde nicht gefunden!");
+		}
+	
+	}
+
+}

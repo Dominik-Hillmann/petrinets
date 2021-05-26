@@ -1,0 +1,93 @@
+package model;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import propra.pnml.PNMLWopedParser;
+
+public class PnmlParser extends PNMLWopedParser {
+	private PetriNet petriNet;
+	private Set<Place> places = new HashSet<Place>();
+	private Set<Transition> transitions = new HashSet<Transition>();
+	private Map<String, String> names = new HashMap<String, String>();
+	private Map<String, Position> positions = new HashMap<String, Position>();
+	private Map<String, Integer> tokens = new HashMap<String, Integer>();
+	private Map<String, String[]> arcs = new HashMap<String, String[]>();
+	
+	public PnmlParser(final File pnml) throws NodeNotFoundException, IllegalArcException {
+		super(pnml);
+		initParser();
+		parse();
+		
+		// Die Methoden, die die Elemente der PNML handeln sind so implementiert,
+		// dass alle Elemente zunächste gesammelt werden, um dann geordnet dem Petrinetz
+		// zugeordnet werden.
+		petriNet = new PetriNet(places, transitions);
+		petriNet.initNames(names);
+		petriNet.initPositions(positions);
+		petriNet.initTokens(tokens);
+		petriNet.initArcs(arcs);
+		
+		for (Place p : places) {
+			System.out.print("Place " + p.getId());
+			System.out.println(" (" + p.getName() + ", " + p.getPosition().toString() + ", n_t " + String.valueOf(p.numTokens()) + ")");
+			for (Transition t : p.getTargets())
+				System.out.println("  zu " + t.getId());
+			for (Transition t : p.getOrigins())
+				System.out.println("  von " + t.getId());
+		}
+		
+		System.out.println();
+		
+		for (Transition t : transitions) {
+			System.out.print("Trans " + t.getId());
+			System.out.println(" (" + t.getName() + ", " + t.getPosition().toString() + ")");
+			for (Place p : t.getPreset())
+				System.out.println("  von " + p.getId());
+			for (Place p : t.getPostset())
+				System.out.println("  zu " + p.getId());
+		}
+	}
+	
+	
+	public PetriNet getPetriNet() {
+		return petriNet;		
+	}
+	
+	@Override
+	public void newTransition(final String id) {
+		transitions.add(new Transition(id));
+	}
+	
+	@Override
+	public void newPlace(final String id) {
+		places.add(new Place(id));
+	}
+	
+	@Override
+	public void setPosition(final String id, final String x, final String y) {
+		int parsedX = Integer.parseInt(x);
+		int parsedY = Integer.parseInt(y);
+		positions.put(id, new Position(parsedX, parsedY));
+	}
+
+	@Override
+	public void setName(final String id, final String name) {
+		names.put(id, name);
+	}
+
+	@Override
+	public void setTokens(final String id, final String tokens) {
+		int parsedNumTokens = Integer.parseInt(tokens);
+		this.tokens.put(id, parsedNumTokens);
+	}
+	
+	@Override
+	public void newArc(final String id, final String source, final String target) {
+		String[] assignment = { source, target };
+		arcs.put(id, assignment);
+	}
+}

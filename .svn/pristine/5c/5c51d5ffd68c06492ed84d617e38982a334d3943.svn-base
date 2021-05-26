@@ -1,0 +1,220 @@
+/*
+	Dies ist die css-Datei, in der das Layout des Graphen beschrieben ist.
+*/
+
+/*
+	Style-Angabe fuer einen Knoten
+*/
+node {
+	size: 30px;
+	
+	fill-color: #99ccff;
+	
+	text-color: black;
+	text-alignment: under;
+	text-size: 12;
+	/* text-background-mode: plain; */
+
+	stroke-mode: plain;
+	stroke-color: white;
+	stroke-width: 0px;
+}
+
+/*
+   zusaetzliches Attribut "highlight" fuer einen Knoten, der
+   hervorgehoben werden soll
+*/
+node.highlight {
+	text-style: bold;
+	
+	stroke-color: #cc0000;
+	stroke-width: 3px;
+}
+
+node.place {
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 2px;
+}
+node.red {
+	
+}
+
+
+
+node.transition {
+	shape: box;
+	fill-color: white;
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+
+node.marking {
+	shape: box;
+	size: 100px, 30px;
+	text-alignment: center;
+	fill-color: white;
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.markingroot {
+	shape: box;
+	size: 100px, 30px;
+	text-alignment: center;
+	fill-color: white;
+	stroke-mode: plain;
+	stroke-color: red;
+	stroke-width: 1px;
+} 
+node.abort {
+	shape: box;
+	size: 100px, 30px;
+	text-alignment: center;
+	fill-color: white;
+	stroke-mode: plain;
+	stroke-color: orange;
+	stroke-width: 1px;
+}
+node.newlyadded {
+	shape: box;
+	size: 100px, 30px;
+	text-alignment: center;
+	fill-color: white;
+	stroke-mode: plain;
+	stroke-color: green;
+	stroke-width: 1px;
+}
+
+
+node.marked {
+	stroke-mode: plain;
+	stroke-width: 1px;
+	stroke-color: red;
+}
+
+node.root {
+	fill-color: red;
+}
+
+node.has0Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/none.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has1Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/1.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has2Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/2.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has3Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/3.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has4Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/4.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has5Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/5.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has6Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/6.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has7Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/7.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has8Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/8.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.has9Tokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/9.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+node.hasMoreTokens {
+	fill-mode: image-scaled;
+	fill-image: url('ressources/images/more.png');
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+
+
+/*
+   zusaetzliches Attribut "bild" fuer einen Knoten mit einer Abbildung
+*/
+/*node.bild {
+	fill-mode: image-scaled;
+	fill-image: url('images/logo_grau.png');
+}*/
+
+/*
+	Style-Angabe fuer eine Kante
+*/
+edge {
+	fill-color: black;
+	arrow-shape: arrow;
+	arrow-size: 9px, 6px;
+	text-size:  12;
+	text-color: black;
+	text-background-mode: plain;
+	text-background-color: white;
+}
+
+edge.abort {
+	fill-color: orange;
+	arrow-shape: arrow;
+	arrow-size: 9px, 6px;
+	text-size:  12;
+	text-color: black;
+	text-background-mode: plain;
+	text-background-color: white;
+}
+
+edge.newlyadded {
+	fill-color: green;
+	arrow-shape: arrow;
+	arrow-size: 9px, 6px;
+	text-size:  12;
+	text-color: black;
+	text-background-mode: plain;
+	text-background-color: white;
+
+}

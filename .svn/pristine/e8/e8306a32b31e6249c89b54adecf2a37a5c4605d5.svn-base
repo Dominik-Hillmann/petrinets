@@ -1,0 +1,115 @@
+package view;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.MultiGraph;
+
+import model.Arc;
+import model.Marking;
+import model.NodeNotFoundException;
+import model.Pair;
+import model.ReachabilityGraph;
+
+public class VisualReachabilityGraph extends MultiGraph {
+	private ReachabilityGraph sourceNet;
+	private final String CSS_FILE = "url(" + 
+    		System.getProperty("user.dir") +
+    		"/ressources/graph.css)";
+	
+	public VisualReachabilityGraph(ReachabilityGraph reach) {
+		super("Erreichbarkeitsgraph");
+		sourceNet = reach;
+		
+		addAttribute("ui.stylesheet", CSS_FILE);
+		createGraphNodes();
+	}
+	
+	public void update(ReachabilityGraph reachNet) {
+		Set<String> visualIds = new HashSet<String>();
+		getEachNode().forEach(node -> visualIds.add(node.getId()));
+		System.out.println(visualIds);
+		
+		Set<String> modelIds = new HashSet<String>();
+		reachNet.getMarkings().forEach(marking -> modelIds.add(marking.getId()));
+		System.out.println(modelIds);
+		
+		// Zuerst alle entfernen, die nicht im Modell sind.
+		for (String visualId : visualIds) {
+			if (!modelIds.contains(visualId))
+				removeNode(visualId);
+		}
+		
+		// Dann alle hinzufügen, die im Modell und nicht in der Visualisierung sind.
+		Set<String> addedModelIds = new HashSet<String>();
+		for (String modelId : modelIds) {
+			if (!visualIds.contains(modelId)) {
+				addedModelIds.add(modelId);
+			}
+		}
+		System.out.println("VIS " + visualIds.toString());
+		System.out.println("MOD " + modelIds.toString());
+		System.out.println("ADD " + addedModelIds.toString());
+		
+		for (String newlyAddedNodeId : addedModelIds) {
+			Node newNode = addNode(newlyAddedNodeId);
+			try {
+				newNode.addAttribute("ui.label", reachNet.getMarking(newlyAddedNodeId).guiName());
+			
+				for (Arc arc : reachNet.getMarking(newlyAddedNodeId).getArcs()) {
+					String fromId = arc.getFrom().getId();
+					String toId = arc.getTo().getId();
+					this.addEdge(arc.getId(), (Node) getNode(fromId), (Node) getNode(toId), true);
+//					addEdge(newlyAddedNodeId, newNode, newNode, autoCreate);
+				}
+			} catch (NodeNotFoundException e) {
+				e.printStackTrace();
+			}
+		
+		
+		}
+		
+		// Kanten einfügen.
+		
+	}
+	
+	private void createGraphNodes() {
+		for (Marking marking : sourceNet.getMarkings()) {
+			Node markingGraphicalNode = addNode(marking.getId());
+			markingGraphicalNode.addAttribute("ui.class", "marking");
+			markingGraphicalNode.addAttribute("ui.label", marking.getName());
+			
+			if (marking.equals(sourceNet.getRoot()))
+				markingGraphicalNode.addAttribute("ui.class", "root");
+		}
+		
+		Set<String> alreadyAddedIds = new HashSet<String>();
+		for (Arc arc : sourceNet.getArcs()) {
+			String fromId = arc.getFrom().getId();
+			String toId = arc.getTo().getId();
+			Pair<String, String> idPair = new Pair<String, String>(fromId, toId);
+			
+			Node from = getNode(fromId);
+			Node to = getNode(toId);
+			boolean idAlreadyUsed = alreadyAddedIds.contains(idPair.toString());
+			if (idAlreadyUsed) {
+				continue;
+			} else {
+				addEdge(arc.getId(), from, to, true);
+				alreadyAddedIds.add(idPair.toString());
+			}	
+		}
+	}
+	
+	private void removeAll() {
+		for (Edge edge : getEachEdge()) {
+			removeEdge(edge);
+		}
+		
+		for (Node node : getEachNode()) {
+			removeNode(node);
+		}
+	}
+}

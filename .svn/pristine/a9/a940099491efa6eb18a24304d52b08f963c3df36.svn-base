@@ -1,0 +1,24 @@
+package model;
+
+/**
+ * Mir ist aufgefallen, dass ich im Projekt oft eine Datenstruktur brauchte,
+ * die zwei beliebige Elemente aufbewahren kann und garantiert, dass
+ * sie nur zwei Elemente beinhaltet.
+ */
+public class Pair<ClassOne, ClassTwo> {
+	private final ClassOne elementOne;
+	private final ClassTwo elementTwo;
+	
+	public Pair(ClassOne elementOne, ClassTwo elementTwo) {
+		this.elementOne = elementOne;
+		this.elementTwo = elementTwo;
+	}	
+	
+	public ClassOne getFirst() {
+		return elementOne;
+	}
+	
+	public ClassTwo getSecond() {
+		return elementTwo;
+	}
+}

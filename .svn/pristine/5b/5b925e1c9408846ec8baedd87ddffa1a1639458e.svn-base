@@ -1,0 +1,18 @@
+package view;
+
+import org.graphstream.graph.implementations.MultiGraph;
+
+public abstract class VisualGraph extends MultiGraph {
+	protected final static String CSS_FILE = "url(" + 
+    		System.getProperty("user.dir") +
+    		"/ressources/graph.css)";
+
+	protected final static String LABEL_ATTRIBUTE = "ui.label";
+	protected final static String CLASS_ATTRIBUTE = "ui.class";
+	protected final static String POSITION_ATTRIBUTE = "xy";
+	
+	public VisualGraph(String id) {
+		super(id);
+	}
+	
+}

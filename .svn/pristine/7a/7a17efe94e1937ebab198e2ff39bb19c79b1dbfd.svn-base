@@ -1,0 +1,59 @@
+package model;
+
+import java.util.Set;
+
+public class PetriNet {
+	Set<Place> places;
+	Set<Transition> transitions;
+	
+	public PetriNet(Set<Place> places, Set<Transition> transitions) {
+		this.places = places;
+		this.transitions = transitions;
+	}
+	
+	/**
+	 * Findet eine Stelle anhand derer ID.
+	 * @param id Die ID der gesuchten Stelle.
+	 * @return Die Stelle mit dieser ID.
+	 * @throws NodeNotFoundException Wenn keine Stelle mit dieser ID im Petrinetz existiert.
+	 */
+	public Place getPlaceById(String id) throws NodeNotFoundException {
+		for (Place place : places) {
+			if (place.hasId(id)) {
+				return place;
+			}
+		}
+		
+		throw new NodeNotFoundException("Stelle mit der ID " + id + " konnte nicht gefunden werden.");
+	}
+	
+	/**
+	 * Findet eine Transition anhand derer ID.
+	 * @param id Die ID der gesuchten Transition.
+	 * @return Die Transition, die diese ID besitzt.
+	 * @throws NodeNotFoundException Wenn keine Transition mit dieser ID im Petrinetz existiert.
+	 */
+	public Transition getTransitionById(String id) throws NodeNotFoundException {
+		for (Transition transition : transitions) {
+			if (transition.hasId(id)) {
+				return transition;
+			}
+		}
+		
+		throw new NodeNotFoundException("Transition mit der ID " + id + " konnte nicht gefunden werden.");
+	}
+	
+	/**
+	 * Findet einen Knoten im Petrinetz anhand dessen ID.
+	 * @param id Die ID des Knoten.
+	 * @return Den gesuchten Knoten.
+	 * @throws NodeNotFoundException Wenn kein Knoten mit dieser ID im Petrinetz existiert.
+	 */
+	public Node getNodeById(String id) throws NodeNotFoundException {
+		try {
+			return (Node) getPlaceById(id);
+		} catch (NodeNotFoundException e) {
+			return (Node) getTransitionById(id);
+		}
+	}
+}

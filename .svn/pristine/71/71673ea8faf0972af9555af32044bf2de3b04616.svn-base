@@ -1,0 +1,30 @@
+package model;
+
+/**
+ * Ich brauchte eine Klasse, die mir dabei hilft, zwei Elemente einander
+ * zuzuordnen.
+ * @param <ClassOne> Die Klasse des ersten Elements.
+ * @param <ClassTwo> Die Klasse des zweiten Elements.
+ */
+public class Pair<ClassOne, ClassTwo> {
+	private final ClassOne elementOne;
+	private final ClassTwo elementTwo;
+	
+	public Pair(ClassOne elementOne, ClassTwo elementTwo) {
+		this.elementOne = elementOne;
+		this.elementTwo = elementTwo;
+	}	
+	
+	public ClassOne getFirst() {
+		return elementOne;
+	}
+	
+	public ClassTwo getSecond() {
+		return elementTwo;
+	}
+
+	@Override 
+	public String toString() {
+		return "(" + elementOne.toString() + ", " + elementTwo.toString() + ")";
+	}
+}

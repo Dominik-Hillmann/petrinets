@@ -1,0 +1,12 @@
+package model;
+
+public abstract class Arc extends PetriNetElement {
+	protected Node from;
+	protected Node to;
+	
+	protected Arc(String id, Node from, Node to) {
+		super(id);
+		this.from = from;
+		this.to = to;
+	}
+}

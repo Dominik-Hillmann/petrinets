@@ -1,0 +1,5 @@
+/**
+ * Die Controller-Klassen manipulieren die Klassen des Model und dienen als 
+ * User Interface.
+ */
+package controller;

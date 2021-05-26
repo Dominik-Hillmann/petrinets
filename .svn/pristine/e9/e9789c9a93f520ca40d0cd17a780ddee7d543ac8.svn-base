@@ -1,0 +1,79 @@
+package model;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+public class Marking extends Node {
+	private static Set<String> usedIds = new HashSet<String>();
+	private Map<String, Integer> tokens;
+	private Set<MarkingToMarkingArc> origins = new HashSet<MarkingToMarkingArc>();
+	private Set<MarkingToMarkingArc> targets = new HashSet<MarkingToMarkingArc>();
+	
+	public Marking(Map<String, Integer> tokens) {
+		super(getNewId());
+		this.tokens = tokens;
+	}
+	
+	public void registerTarget(MarkingToMarkingArc arc) {
+		if (equals(arc.getFrom())) {
+			targets.add(arc);
+		}
+	}
+	
+	public void registerTarget(Marking marking) {
+		registerTarget(new MarkingToMarkingArc(this, marking));
+	}
+	
+	
+	public void registerOrigin(MarkingToMarkingArc arc) {
+		if (equals(arc.getTo())) {
+			origins.add(arc);
+		}
+	}
+	
+	public void registerOrigin(Marking marking) {
+		registerOrigin(new MarkingToMarkingArc(marking, this));
+	}
+	
+	public Set<Marking> getOrigins() {
+		Set<Marking> originMarkings = new HashSet<Marking>();
+		origins.forEach(origin -> originMarkings.add(origin.getFrom()));
+		return originMarkings;
+	}
+	
+	public Set<Marking> getTargets() {
+		Set<Marking> targetMarkings = new HashSet<Marking>();
+		targets.forEach(target -> targetMarkings.add(target.getTo()));
+		return targetMarkings;
+	}
+	
+	private static String getNewId() {
+		int idNum = 1;
+		String proposedId = "m1";
+		while (usedIds.contains(proposedId)) {
+			idNum++;
+			proposedId = "m" + String.valueOf(idNum);
+		}
+		
+		usedIds.add(proposedId);
+		return proposedId;
+	}
+	
+	public Map<String, Integer> getMarking() {
+		return tokens;
+	}
+	
+	@Override
+	public String toString() {
+		String representation = "Marking(id=" + id + ", [";
+		for (String placeId : tokens.keySet()) {
+			int numTokens = tokens.get(placeId);
+			representation += placeId + "=" + String.valueOf(numTokens) + ", ";	
+		}
+		representation = representation.substring(0, representation.length() - 2);
+		representation += "])";
+		
+		return representation;
+	}
+}

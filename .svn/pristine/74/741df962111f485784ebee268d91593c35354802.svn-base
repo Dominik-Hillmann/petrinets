@@ -1,0 +1,121 @@
+package view;
+
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.MultiGraph;
+
+/**
+ * Die Klasse MyGraph implementiert einen Graphen mittels GraphStream. Die
+ * Klasse erbt von <i>MultiGraph</i> (nicht von Graph), um auch mehrere Kanten
+ * zwischen zwei Knoten zu ermöglichen (dies benötigen Sie für den
+ * Erreichbarkeitsgraphen).
+ * 
+ * <p>
+ * <b>Achtung:</b><br> Beachten Sie an dieser Stelle bitte die Hinweise aus der
+ * Aufgabenstellung bezüglich der Trennung <i>eigener Datenstrukturen zur
+ * Repräsentation eines Graphen</i> (Petrinetz oder Erreichbarkeitsgraphen) und
+ * der <i>graphischen Darstellung eines Graphen</i> mittels der
+ * Graphenvisualisierungsbibliothek GraphStream.
+ * </p>
+ * 
+ * <p>
+ * In diesem Beispielprogramm soll lediglich die Verwendung der
+ * Graphenvisualisierungsbibliothek GraphStream vorgestellt werden. Eine
+ * geeignete Datenstruktur zur Repräsentation eines Graphen - wie in der
+ * Aufgabenstellung erwähnt - ist daher nicht Teil der Programmstruktur. In
+ * Ihrer eigenen Lösung müssen Sie diese Anforderung selber realisieren.
+ * </p>
+ * 
+ * @author ProPra-Team FernUni Hagen
+ */
+public class MyGraph extends MultiGraph {
+
+	/** URL-Angabe zur css-Datei, in der das Layout des Graphen angegeben ist. */
+    private static String CSS_FILE = "url(" + MyGraph.class.getResource("/graph.css") + ")"; // diese Variante der Pfadangabe funktioniert auch aus einem JAR heraus
+    
+	/**
+	 * Im Konstruktor der Klasse MyGraph wird ein Graph mit vier Knoten und
+	 * insgesamt sechs gerichteten Kanten erzeugt. Zwei Multi-Kanten gehen von A
+	 * nach C. Zwei entgegengesetzte Kanten gehen von C nach D bzw. von D nach
+	 * C.
+	 */
+	public MyGraph() {
+		super("Beispiel");
+
+		// Angabe einer css-Datei für das Layout des Graphen
+		this.addAttribute("ui.stylesheet", CSS_FILE);
+
+		// Erzeugen von Knoten
+		Node nodeA = this.addNode("n1");
+		nodeA.addAttribute("ui.label", "A");
+		nodeA.addAttribute("xy", 100, 50);
+
+		Node nodeB = this.addNode("n2");
+		nodeB.addAttribute("ui.label", "B");
+		nodeB.addAttribute("xy", 200, 50);
+
+		Node nodeC = this.addNode("n3");
+		nodeC.addAttribute("ui.label", "C");
+		nodeC.addAttribute("xy", 300, 50);
+
+		Node nodeD = this.addNode("n4");
+		nodeD.addAttribute("ui.label", "D");
+		nodeD.addAttribute("xy", 200, 100);
+
+		Node nodeE = this.addNode("n5");
+		nodeE.addAttribute("ui.label", "E");
+		nodeE.addAttribute("xy", 200, 0);
+		nodeE.addAttribute("ui.class", "bild");
+
+		// Erzeugen von Kanten
+		Edge edge1 = this.addEdge("k1", nodeA, nodeB, true);
+		edge1.addAttribute("ui.label", "Kante 1");
+
+		Edge edge2 = this.addEdge("k2", nodeB, nodeC, true);
+		edge2.addAttribute("ui.label", "Kante 2");
+
+		Edge edge3a = this.addEdge("k3a", nodeA, nodeD, true);
+		edge3a.addAttribute("ui.label", "Kante 3a");
+
+		Edge edge3b = this.addEdge("k3b", nodeA, nodeD, true);
+		edge3b.addAttribute("ui.label", "Kante 3b");
+
+		Edge edge4 = this.addEdge("k4", nodeD, nodeC, true);
+		edge4.addAttribute("ui.label", "Kante 4");
+
+		Edge edge5 = this.addEdge("k5", nodeC, nodeD, true);
+		edge5.addAttribute("ui.label", "Kante 5");
+
+		Edge edge6 = this.addEdge("k6", nodeB, nodeE, true);
+		edge6.addAttribute("ui.label", "Kante zum Knoten mit Bild");
+	}
+
+	/**
+	 * Liefert einen Text zu einem Knoten, der für die Ausgabe verwendet wird.
+	 * 
+	 * @param id
+	 *            Id des Knotens, zu dem der Text ermittelt werden soll
+	 * @return Ausgabe-Text zu einem Knoten
+	 */
+	public String getOutputText(String id) {
+		Node node = this.getNode(id);
+		return new String("Der Knoten \"" + node.getAttribute("ui.label")
+				+ "\" hat die ID \"" + node.getId() + "\"");
+	}
+
+	/**
+	 * Das Hervorheben des Knotens wegnehmen oder setzen.
+	 * 
+	 * @param id
+	 *            Id des Knotens, bei dem das Hervorheben getauscht werden soll
+	 */
+	public void toggleNodeHighlight(String id) {
+		Node node = this.getNode(id);
+
+		if (node.hasAttribute("ui.class")) {
+			node.removeAttribute("ui.class");
+		} else {
+			node.addAttribute("ui.class", "highlight");
+		}
+	}
+}
